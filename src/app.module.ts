@@ -4,6 +4,8 @@ import { WargaModule } from './warga/warga.module';
 import { AuthModule } from './auth/auth.module';
 import { AppController } from './app.controller';
 import { BroadcastModule } from './broadcast/broadcast.module';
+import { ExpensesModule } from './expenses/expenses.module';
+
 
 @Module({
   imports: [
@@ -11,6 +13,7 @@ import { BroadcastModule } from './broadcast/broadcast.module';
     AuthModule,
     WargaModule,
     BroadcastModule,
+    ExpensesModule,
   ],
   controllers: [],
   providers: [],
