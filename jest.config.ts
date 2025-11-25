@@ -5,13 +5,21 @@ const config: Config.InitialOptions = {
   testEnvironment: 'node',
   rootDir: '.', // tetap di root project
   testMatch: ['<rootDir>/src/**/*.spec.ts', '<rootDir>/test/**/*.spec.ts'],
+
   transform: {
-    '^.+\\.(t|j)s$': 'ts-jest',
+    '^.+\\.(t|j)s$': [
+      'ts-jest',
+      {
+        diagnostics: false,
+      },
+    ],
   },
+
   moduleNameMapper: {
     '^src/(.*)$': '<rootDir>/src/$1',
     '^utils/(.*)$': '<rootDir>/utils/$1',
   },
+
   moduleFileExtensions: ['ts', 'js', 'json'],
   collectCoverage: false,
   coverageDirectory: 'coverage',
@@ -19,12 +27,7 @@ const config: Config.InitialOptions = {
   resetMocks: true,
   restoreMocks: true,
   setupFilesAfterEnv: ['<rootDir>/test/setup.ts'],
-  globals: {
-    'ts-jest': {
-      diagnostics: false,
-      isolatedModules: true,
-    },
-  },
+
 };
 
 export default config;
