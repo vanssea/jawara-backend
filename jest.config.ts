@@ -1,13 +1,12 @@
-// jest.config.ts
 import type { Config } from '@jest/types';
 
 const config: Config.InitialOptions = {
   preset: 'ts-jest',
   testEnvironment: 'node',
-  rootDir: '.', // cari dari root project
-  testMatch: ['<rootDir>/test/**/*.spec.ts', '<rootDir>/src/test/**/*.spec.ts', '**/?(*.)+(spec|test).ts'],
+  rootDir: '.', // tetap di root project
+  testMatch: ['<rootDir>/src/**/*.spec.ts', '<rootDir>/test/**/*.spec.ts'],
   transform: {
-    '^.+\\.ts$': 'ts-jest',
+    '^.+\\.(t|j)s$': 'ts-jest',
   },
   moduleNameMapper: {
     '^src/(.*)$': '<rootDir>/src/$1',
@@ -15,6 +14,16 @@ const config: Config.InitialOptions = {
   moduleFileExtensions: ['ts', 'js', 'json'],
   collectCoverage: false,
   coverageDirectory: 'coverage',
+  clearMocks: true,
+  resetMocks: true,
+  restoreMocks: true,
+  setupFilesAfterEnv: ['<rootDir>/test/setup.ts'],
+  globals: {
+    'ts-jest': {
+      diagnostics: false,
+      isolatedModules: true,
+    },
+  },
 };
 
 export default config;
