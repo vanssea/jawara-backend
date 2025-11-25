@@ -10,6 +10,7 @@ const config: Config.InitialOptions = {
   },
   moduleNameMapper: {
     '^src/(.*)$': '<rootDir>/src/$1',
+    '^utils/(.*)$': '<rootDir>/utils/$1',
   },
   moduleFileExtensions: ['ts', 'js', 'json'],
   collectCoverage: false,
