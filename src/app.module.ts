@@ -5,6 +5,7 @@ import { AuthModule } from './auth/auth.module';
 import { AppController } from './app.controller';
 import { BroadcastModule } from './broadcast/broadcast.module';
 import { ExpensesModule } from './expenses/expenses.module';
+import { MutasiModule } from './mutasi/mutasi.module';
 
 
 @Module({
@@ -14,6 +15,7 @@ import { ExpensesModule } from './expenses/expenses.module';
     WargaModule,
     BroadcastModule,
     ExpensesModule,
+    MutasiModule,
   ],
   controllers: [],
   providers: [],
