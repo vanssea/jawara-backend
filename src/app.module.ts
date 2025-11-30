@@ -6,7 +6,7 @@ import { AppController } from './app.controller';
 import { BroadcastModule } from './broadcast/broadcast.module';
 import { ExpensesModule } from './expenses/expenses.module';
 import { MutasiModule } from './mutasi/mutasi.module';
-
+import { LogAktifitasModule } from './log-aktifitas/log-aktifitas.module';
 
 @Module({
   imports: [
@@ -16,6 +16,7 @@ import { MutasiModule } from './mutasi/mutasi.module';
     BroadcastModule,
     ExpensesModule,
     MutasiModule,
+    LogAktifitasModule,
   ],
   controllers: [],
   providers: [],
