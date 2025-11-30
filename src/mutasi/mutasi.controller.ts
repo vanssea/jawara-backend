@@ -1,133 +1,98 @@
-import { HttpException, Injectable } from '@nestjs/common';
-import { SupabaseService } from 'src/common/service/supabase.service';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Patch,
+  Delete,
+  UseGuards,
+} from '@nestjs/common';
+import { MutasiService } from './mutasi.service';
 import { CreateMutasiDto } from './dto/create-mutasi.dto';
 import { UpdateMutasiDto } from './dto/update-mutasi.dto';
-import {
-  createActivity,
-  updateActivity,
-  deleteActivity,
-} from 'utils/log.utils';
+import { AuthGuard } from 'src/auth/guards/auth.guard';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { AuthUser } from 'src/common/types/types';
+import { Auth } from 'src/common/decorator/auth.decorator';
+import { errorResponse, successResponse } from 'utils/response.utils';
 
-@Injectable()
-export class MutasiService {
-  private readonly tableName = 'mutasi_keluarga';
+@ApiBearerAuth()
+@UseGuards(AuthGuard)
+@ApiTags('Mutasi')
+@Controller('mutasi')
+export class MutasiController {
+  constructor(private readonly mutasiService: MutasiService) {}
 
-  constructor(private readonly supabaseService: SupabaseService) {}
-
-  private get client() {
-    return this.supabaseService.getClient();
-  }
-
-  // create accepts userId and body (mirip broadcast)
-  async create(userId: string, body: CreateMutasiDto) {
+  @ApiOperation({ summary: 'Create new mutasi' })
+  @Post()
+  async create(@Auth() user: AuthUser, @Body() body: CreateMutasiDto) {
     try {
-      const { data, error } = await this.client
-        .from(this.tableName)
-        .insert({
-          ...body,
-          created_by: userId,
-        })
-        .select('*')
-        .single();
+      const result = await this.mutasiService.create(user.sub, body);
+      const message = 'Mutasi created successfully';
 
-      if (error) throw new HttpException(error.message, 500);
-
-      // optional: insert activity log (same pattern as broadcast)
-      const { error: logsError } = await this.client
-        .from('log_aktifitas')
-        .insert({
-          aktor_id: userId,
-          deskripsi: createActivity('mutasi', `${data.id}`),
-        });
-      if (logsError) throw new HttpException(logsError.message, 500);
-
-      return data;
+      return successResponse(result, message);
     } catch (error) {
-      throw new HttpException(error.message || 'Internal server error', 500);
+      return errorResponse(
+        error.status || 500,
+        error.response?.message || error.message,
+      );
     }
   }
 
+  @ApiOperation({ summary: 'Get all mutasi' })
+  @Get()
   async findAll() {
     try {
-      const { data, error } = await this.client
-        .from(this.tableName)
-        .select('*')
-        .order('created_at', { ascending: false });
+      const result = await this.mutasiService.findAll();
+      const message = 'Mutasis fetched successfully';
 
-      if (error) throw new HttpException(error.message, 500);
-
-      return data ?? [];
+      return successResponse(result, message);
     } catch (error) {
-      throw new HttpException(error.message || 'Internal server error', 500);
+      return errorResponse(500, error.message);
     }
   }
 
-  // id as string to match controller style
-  async findOne(id: string) {
+  @ApiOperation({ summary: 'Get mutasi by ID' })
+  @Get(':id')
+  async findOne(@Param('id') id: string) {
     try {
-      const { data, error } = await this.client
-        .from(this.tableName)
-        .select('*')
-        .eq('id', id)
-        .single();
+      const result = await this.mutasiService.findOne(id);
+      const message = `Mutasi ${id} fetched successfully`;
 
-      if (error) throw new HttpException(error.message, 500);
-
-      return data;
+      return successResponse(result, message);
     } catch (error) {
-      throw new HttpException(error.message || 'Internal server error', 500);
+      return errorResponse(500, error.message);
     }
   }
 
-  async update(userId: string, id: string, body: UpdateMutasiDto) {
+  @ApiOperation({ summary: 'Update mutasi by ID' })
+  @Patch(':id')
+  async update(
+    @Param('id') id: string,
+    @Auth() user: AuthUser,
+    @Body() body: UpdateMutasiDto,
+  ) {
     try {
-      const { data, error } = await this.client
-        .from(this.tableName)
-        .update({
-          ...body,
-          updated_by: userId,
-        })
-        .eq('id', id)
-        .select('*')
-        .single();
+      const result = await this.mutasiService.update(user.sub, id, body);
+      const message = `Mutasi ${id} updated successfully`;
 
-      if (error) throw new HttpException(error.message, 500);
-
-      const { error: logsError } = await this.client
-        .from('log_aktifitas')
-        .insert({
-          aktor_id: userId,
-          deskripsi: updateActivity('mutasi', `${data.id}`),
-        });
-      if (logsError) throw new HttpException(logsError.message, 500);
-
-      return data;
+      return successResponse(result, message);
     } catch (error) {
-      throw new HttpException(error.message || 'Internal server error', 500);
+      return errorResponse(500, error.message);
     }
   }
 
-  async remove(userId: string, id: string) {
+  @ApiOperation({ summary: 'Delete mutasi by ID' })
+  @Delete(':id')
+  async remove(@Param('id') id: string, @Auth() user: AuthUser) {
     try {
-      // get data for logging (and to throw 404 if not exist)
-      const existing = await this.findOne(id);
+      await this.mutasiService.remove(user.sub, id);
+      const message = `Mutasi ${id} deleted successfully`;
 
-      const { error } = await this.client
-        .from(this.tableName)
-        .delete()
-        .eq('id', id);
-
-      if (error) throw new HttpException(error.message, 500);
-
-      const { error: logsError } = await this.client
-        .from('log_aktifitas')
-        .insert({
-          aktor_id: userId,
-          deskripsi: deleteActivity('mutasi', `${existing.id}`),
-        });
-      if (logsError) throw new HttpException(logsError.message, 500);
+      return successResponse(null, message);
     } catch (error) {
-      throw new HttpException(error.message || 'Internal server error', 500);
+      return errorResponse(500, error.message);
     }
   }
 }
