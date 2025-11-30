@@ -32,6 +32,12 @@ export class AuthService {
     const { data, error } = await this.supabaseService.getClient().auth.signUp({
       email: request.email,
       password: request.password,
+      options: {
+        data: {
+          name: request.name,
+          phone: request.phone,
+        },
+      },
     });
 
     if (error) throw new HttpException(error.message, 500);
