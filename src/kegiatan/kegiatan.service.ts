@@ -43,14 +43,41 @@ export class KegiatanService {
 
   async findAll() {
     try {
-      const { data, error } = await this.supabaseService
-        .getClient()
-        .from('kegiatan')
-        .select('*');
+      const client = this.supabaseService.getClient();
 
+      const { data, error } = await client.from('kegiatan').select('*');
       if (error) throw new HttpException(error.message, 500);
 
-      return data;
+      const kategoriIds = Array.from(
+        new Set(
+          (data || [])
+            .map((k: any) => k.kategori_id)
+            .filter((id: any) => id !== null && id !== undefined),
+        ),
+      );
+
+      let kategoriMap: Record<number, string> = {};
+      if (kategoriIds.length > 0) {
+        const { data: kategoriData, error: kategoriError } = await client
+          .from('kegiatan_kategori')
+          .select('id, nama')
+          .in('id', kategoriIds);
+        if (kategoriError) throw new HttpException(kategoriError.message, 500);
+        kategoriMap = (kategoriData || []).reduce(
+          (acc: Record<number, string>, row: any) => {
+            acc[row.id] = row.nama;
+            return acc;
+          },
+          {},
+        );
+      }
+
+      const enriched = (data || []).map((row: any) => ({
+        ...row,
+        kategori: row.kategori_id != null ? kategoriMap[row.kategori_id] ?? null : null,
+      }));
+
+      return enriched;
     } catch (error) {
       throw new HttpException(error.message, 500);
     }
@@ -58,8 +85,8 @@ export class KegiatanService {
 
   async findOne(id: string) {
     try {
-      const { data, error } = await this.supabaseService
-        .getClient()
+      const client = this.supabaseService.getClient();
+      const { data, error } = await client
         .from('kegiatan')
         .select('*')
         .eq('id', id)
@@ -67,7 +94,20 @@ export class KegiatanService {
 
       if (error) throw new HttpException(error.message, 500);
 
-      return data;
+      if (!data) return data;
+
+      let kategoriName: string | null = null;
+      if (data.kategori_id != null) {
+        const { data: kategori, error: kategoriError } = await client
+          .from('kegiatan_kategori')
+          .select('nama')
+          .eq('id', data.kategori_id)
+          .single();
+        if (kategoriError) throw new HttpException(kategoriError.message, 500);
+        kategoriName = kategori?.nama ?? null;
+      }
+
+      return { ...data, kategori: kategoriName };
     } catch (error) {
       throw new HttpException(error.message, 500);
     }

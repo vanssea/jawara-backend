@@ -5,9 +5,9 @@ import { AuthModule } from './auth/auth.module';
 import { AppController } from './app.controller';
 import { BroadcastModule } from './broadcast/broadcast.module';
 import { ExpensesModule } from './expenses/expenses.module';
-import { MutasiModule } from './mutasi/mutasi.module';
+// import { MutasiModule } from './mutasi/mutasi.module';
 import { LogAktifitasModule } from './log-aktifitas/log-aktifitas.module';
-
+import { KegiatanModule } from './kegiatan/kegiatan.module';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
@@ -15,8 +15,9 @@ import { LogAktifitasModule } from './log-aktifitas/log-aktifitas.module';
     WargaModule,
     BroadcastModule,
     ExpensesModule,
-    MutasiModule,
+    // MutasiModule,
     LogAktifitasModule,
+    KegiatanModule,
   ],
   controllers: [],
   providers: [],
