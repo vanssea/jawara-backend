@@ -20,8 +20,11 @@ export class WargaService {
   }
 
   async create(createWargaDto: CreateWargaDto) {
-    // If keluarga_id is not provided, let the database handle the default (gen_random_uuid())
-    const insertData = { ...createWargaDto };
+    // Explicitly set keluarga_id to null if not provided or empty
+    const insertData = {
+      ...createWargaDto,
+      keluarga_id: createWargaDto.keluarga_id || null,
+    };
     
     const { data, error } = await this.client
       .from(this.tableName)
