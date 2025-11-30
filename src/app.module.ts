@@ -7,6 +7,7 @@ import { BroadcastModule } from './broadcast/broadcast.module';
 import { ExpensesModule } from './expenses/expenses.module';
 import { MutasiModule } from './mutasi/mutasi.module';
 import { LogAktifitasModule } from './log-aktifitas/log-aktifitas.module';
+import { TransferChannelModule } from './transfer-channel/transfer-channel.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { LogAktifitasModule } from './log-aktifitas/log-aktifitas.module';
     ExpensesModule,
     MutasiModule,
     LogAktifitasModule,
+    TransferChannelModule,
   ],
   controllers: [],
   providers: [],
