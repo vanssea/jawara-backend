@@ -10,6 +10,8 @@ import { UpdateWargaDto } from './dto/update-warga.dto';
 @Injectable()
 export class WargaService {
   private readonly tableName = 'data_warga';
+  private readonly selectColumns = 
+    'id, nama, tempat_lahir, tanggal_lahir, no_telp, jenis_kelamin, agama, golongan_darah, pendidikan_terakhir, pekerjaan, peran, status, keluarga_id, created_at';
 
   constructor(private readonly supabaseService: SupabaseService) {}
 
@@ -18,10 +20,13 @@ export class WargaService {
   }
 
   async create(createWargaDto: CreateWargaDto) {
+    // If keluarga_id is not provided, let the database handle the default (gen_random_uuid())
+    const insertData = { ...createWargaDto };
+    
     const { data, error } = await this.client
       .from(this.tableName)
-      .insert(createWargaDto)
-      .select('*')
+      .insert(insertData)
+      .select(this.selectColumns)
       .single();
 
     if (error) {
@@ -34,7 +39,7 @@ export class WargaService {
   async findAll() {
     const { data, error } = await this.client
       .from(this.tableName)
-      .select('*')
+      .select(this.selectColumns)
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -47,7 +52,7 @@ export class WargaService {
   async findOne(id: string) {
     const { data, error } = await this.client
       .from(this.tableName)
-      .select('*')
+      .select(this.selectColumns)
       .eq('id', id)
       .single();
 
@@ -74,7 +79,7 @@ export class WargaService {
       .from(this.tableName)
       .update(updateWargaDto)
       .eq('id', id)
-      .select('*')
+      .select(this.selectColumns)
       .single();
 
     if (error) {
