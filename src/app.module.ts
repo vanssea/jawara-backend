@@ -8,6 +8,8 @@ import { ExpensesModule } from './expenses/expenses.module';
 // import { MutasiModule } from './mutasi/mutasi.module';
 import { LogAktifitasModule } from './log-aktifitas/log-aktifitas.module';
 import { KegiatanModule } from './kegiatan/kegiatan.module';
+import { TransferChannelModule } from './transfer-channel/transfer-channel.module';
+
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
@@ -18,6 +20,8 @@ import { KegiatanModule } from './kegiatan/kegiatan.module';
     // MutasiModule,
     LogAktifitasModule,
     KegiatanModule,
+    TransferChannelModule,
+    
   ],
   controllers: [],
   providers: [],

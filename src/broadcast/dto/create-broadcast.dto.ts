@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsString, IsNotEmpty, IsOptional, IsDateString } from 'class-validator';
 
 export class CreateBroadcastDto {
@@ -17,12 +17,16 @@ export class CreateBroadcastDto {
   @IsNotEmpty()
   tanggal_publikasi: Date;
 
-  @ApiProperty({ example: 'https://example.com/gambar.jpg', required: false })
+  @ApiPropertyOptional({
+    example: 'broadcast/images/123.jpg',
+  })
   @IsString()
   @IsOptional()
   link_lampiran_gambar?: string;
 
-  @ApiProperty({ example: 'https://example.com/dokumen.pdf', required: false })
+  @ApiPropertyOptional({
+    example: 'broadcast/documents/123.pdf',
+  })
   @IsString()
   @IsOptional()
   link_lampiran_dokumen?: string;
