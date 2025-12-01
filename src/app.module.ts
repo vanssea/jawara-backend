@@ -8,6 +8,7 @@ import { ExpensesModule } from './expenses/expenses.module';
 import { MutasiModule } from './mutasi/mutasi.module';
 import { LogAktifitasModule } from './log-aktifitas/log-aktifitas.module';
 import { TransferChannelModule } from './transfer-channel/transfer-channel.module';
+import { FamiliesModule } from './families/families.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { TransferChannelModule } from './transfer-channel/transfer-channel.modul
     MutasiModule,
     LogAktifitasModule,
     TransferChannelModule,
+    FamiliesModule,
   ],
   controllers: [],
   providers: [],
