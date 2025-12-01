@@ -19,6 +19,7 @@ import { TransferChannelModule } from './transfer-channel/transfer-channel.modul
     MutasiModule,
     LogAktifitasModule,
     TransferChannelModule,
+    
   ],
   controllers: [],
   providers: [],
