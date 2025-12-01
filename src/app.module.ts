@@ -9,6 +9,7 @@ import { MutasiModule } from './mutasi/mutasi.module';
 import { LogAktifitasModule } from './log-aktifitas/log-aktifitas.module';
 import { KegiatanModule } from './kegiatan/kegiatan.module';
 import { TransferChannelModule } from './transfer-channel/transfer-channel.module';
+import { FamiliesModule } from './families/families.module';
 import { KegiatanKategoriModule } from './kegiatan-kategori/kegiatan-kategori.module';
 
 @Module({
@@ -22,6 +23,7 @@ import { KegiatanKategoriModule } from './kegiatan-kategori/kegiatan-kategori.mo
     LogAktifitasModule,
     KegiatanModule,
     TransferChannelModule,
+    FamiliesModule,
     KegiatanKategoriModule,
 
   ],

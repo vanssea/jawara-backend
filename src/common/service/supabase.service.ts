@@ -1,4 +1,4 @@
-import { HttpException, Injectable } from '@nestjs/common';
+import { HttpException, Injectable, InternalServerErrorException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { Express } from 'express';
@@ -10,20 +10,62 @@ export class SupabaseService {
   private readonly storageBucket: string;
 
   constructor(private readonly configService: ConfigService) {
-    const url = this.configService.get('SUPABASE_URL') as string;
-    const anonKey = this.configService.get('SUPABASE_ANON_KEY') as string;
-    const serviceKey = this.configService.get('SUPABASE_SERVICE_KEY') as string;
+    // First: try to read from ConfigService, fallback to process.env
+    const url =
+      this.configService.get<string>('SUPABASE_URL') || process.env.SUPABASE_URL;
+    const anonKey =
+      this.configService.get<string>('SUPABASE_ANON_KEY') ||
+      this.configService.get<string>('SUPABASE_KEY') ||
+      process.env.SUPABASE_ANON_KEY ||
+      process.env.SUPABASE_KEY;
+    const serviceKey =
+      this.configService.get<string>('SUPABASE_SERVICE_KEY') ||
+      this.configService.get<string>('SUPABASE_ADMIN_KEY') ||
+      process.env.SUPABASE_SERVICE_KEY ||
+      process.env.SUPABASE_ADMIN_KEY;
 
+    // Storage bucket fallback
     this.storageBucket =
-      (this.configService.get('SUPABASE_STORAGE_BUCKET') as string) || 'jawara';
+      (this.configService.get<string>('SUPABASE_STORAGE_BUCKET') ||
+        process.env.SUPABASE_STORAGE_BUCKET) || 'jawara';
 
-    this.supabaseClient = createClient(url, anonKey, {
-      auth: { autoRefreshToken: false, persistSession: false },
-    });
+    // Diagnostic logs (DO NOT print full keys). Prints only presence and masked tail.
+    const mask = (s?: string) =>
+      !s ? null : `${s.slice(0, 4)}...${s.slice(-4)}`;
+    console.log('[supabase] SUPABASE_URL set?', !!url);
+    console.log('[supabase] SUPABASE_ANON_KEY set?', !!anonKey, mask(anonKey));
+    console.log('[supabase] SUPABASE_SERVICE_KEY set?', !!serviceKey, mask(serviceKey));
+    console.log('[supabase] SUPABASE_STORAGE_BUCKET:', this.storageBucket);
 
-    this.supabaseAdminClient = createClient(url, serviceKey, {
-      auth: { autoRefreshToken: false, persistSession: false },
-    });
+    // Fail early with helpful message
+    if (!url) {
+      throw new InternalServerErrorException('SUPABASE_URL is not set.');
+    }
+    if (!anonKey) {
+      throw new InternalServerErrorException(
+        'SUPABASE_ANON_KEY (or SUPABASE_KEY) is not set. Provide it in .env or env vars.',
+      );
+    }
+    if (!serviceKey) {
+      throw new InternalServerErrorException(
+        'SUPABASE_SERVICE_KEY (service role) is not set. Required for admin/upload operations.',
+      );
+    }
+
+    // Create clients
+    try {
+      this.supabaseClient = createClient(url, anonKey, {
+        auth: { autoRefreshToken: false, persistSession: false },
+      });
+
+      this.supabaseAdminClient = createClient(url, serviceKey, {
+        auth: { autoRefreshToken: false, persistSession: false },
+      });
+    } catch (err) {
+      console.error('[supabase] failed to create client:', err?.message ?? err);
+      // rethrow so Nest shows meaningful error
+      throw new InternalServerErrorException('Failed to initialize Supabase client.');
+    }
   }
 
   getClient(): SupabaseClient {
@@ -34,6 +76,7 @@ export class SupabaseService {
     return this.supabaseAdminClient;
   }
 
+  // ... (rest of methods unchanged)
   async uploadFile(
     folder: string,
     file?: Express.Multer.File,
