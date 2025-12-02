@@ -17,7 +17,7 @@ export class ExpensesService {
     try {
       const { data, error } = await this.supabaseService
         .getClient()
-        .from('expenses')
+        .from('pengeluaran')
         .insert({
           ...body,
           created_by: userId,
@@ -45,7 +45,7 @@ export class ExpensesService {
   async findAll() {
     const { data, error } = await this.supabaseService
       .getClient()
-      .from('expenses')
+      .from('pengeluaran')
       .select('*');
 
     if (error) throw new HttpException(error.message, 500);
@@ -56,7 +56,7 @@ export class ExpensesService {
   async findOne(id: string) {
     const { data, error } = await this.supabaseService
       .getClient()
-      .from('expenses')
+      .from('pengeluaran')
       .select('*')
       .eq('id', id)
       .single();
@@ -70,7 +70,7 @@ export class ExpensesService {
     try {
       const { data, error } = await this.supabaseService
         .getClient()
-        .from('expenses')
+        .from('pengeluaran')
         .update({
           ...body,
           updated_by: userId,
@@ -102,7 +102,7 @@ export class ExpensesService {
 
       const { error } = await this.supabaseService
         .getClient()
-        .from('expenses')
+        .from('pengeluaran')
         .delete()
         .eq('id', id);
 
