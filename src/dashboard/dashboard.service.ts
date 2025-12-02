@@ -1,6 +1,7 @@
 import { Injectable, HttpException } from '@nestjs/common';
 import { SupabaseService } from 'src/common/service/supabase.service';
 import { EventDashboardResponseDto } from './dto/event-dashboard-response.dto';
+import { PopulationDashboardResponseDto } from './dto/population-dashboard-response.dto';
 
 @Injectable()
 export class DashboardService {
@@ -144,6 +145,128 @@ export class DashboardService {
           totalPeserta,
           totalUndangan,
         },
+      };
+    } catch (error) {
+      throw new HttpException(error.message, 500);
+    }
+  }
+
+  async getPopulationDashboard(): Promise<PopulationDashboardResponseDto> {
+    try {
+      const client = this.supabaseService.getClient();
+
+      // Fetch warga and keluarga data
+      const { data: wargaData, error: wargaError } = await client
+        .from('data_warga')
+        .select('id, jenis_kelamin, tanggal_lahir, agama, pendidikan_terakhir, pekerjaan, created_at');
+      if (wargaError) throw new HttpException(wargaError.message, 500);
+
+      const { data: keluargaData, error: keluargaError } = await client
+        .from('data_keluarga')
+        .select('id, status_keluarga, created_at');
+      if (keluargaError) throw new HttpException(keluargaError.message, 500);
+
+      const totalWarga = wargaData?.length || 0;
+      const totalKeluarga = keluargaData?.length || 0;
+
+      // Jenis kelamin distribusi
+      const jkCount: Record<string, number> = {};
+      (wargaData || []).forEach((w: any) => {
+        const raw = (w.jenis_kelamin || 'Tidak diketahui').toString().trim();
+        const key = raw.length === 0 ? 'Tidak diketahui' : raw;
+        jkCount[key] = (jkCount[key] || 0) + 1;
+      });
+      const jenisKelamin = Object.entries(jkCount).map(([label, jumlah]) => ({
+        label,
+        jumlah,
+        persentase: totalWarga > 0 ? Math.round((jumlah / totalWarga) * 100) : 0,
+      }));
+
+      // Kelompok usia
+      const ageBuckets: Record<string, number> = {
+        '0-12': 0,
+        '13-17': 0,
+        '18-25': 0,
+        '26-40': 0,
+        '41-60': 0,
+        '60+': 0,
+      };
+      const now = new Date();
+      (wargaData || []).forEach((w: any) => {
+        if (!w.tanggal_lahir) return;
+        const dob = new Date(w.tanggal_lahir);
+        let age = now.getFullYear() - dob.getFullYear();
+        const m = now.getMonth() - dob.getMonth();
+        if (m < 0 || (m === 0 && now.getDate() < dob.getDate())) age--;
+        if (age <= 12) ageBuckets['0-12']++;
+        else if (age <= 17) ageBuckets['13-17']++;
+        else if (age <= 25) ageBuckets['18-25']++;
+        else if (age <= 40) ageBuckets['26-40']++;
+        else if (age <= 60) ageBuckets['41-60']++;
+        else ageBuckets['60+']++;
+      });
+      const usiaKelompok = Object.entries(ageBuckets).map(([label, jumlah]) => ({ label, jumlah }));
+
+      // Agama distribusi
+      const agamaCount: Record<string, number> = {};
+      (wargaData || []).forEach((w: any) => {
+        const key = (w.agama || 'Tidak diketahui').toString().trim() || 'Tidak diketahui';
+        agamaCount[key] = (agamaCount[key] || 0) + 1;
+      });
+      const agama = Object.entries(agamaCount).map(([label, jumlah]) => ({ label, jumlah }));
+
+      // Pendidikan distribusi
+      const pendidikanCount: Record<string, number> = {};
+      (wargaData || []).forEach((w: any) => {
+        const key = (w.pendidikan_terakhir || 'Tidak diketahui').toString().trim() || 'Tidak diketahui';
+        pendidikanCount[key] = (pendidikanCount[key] || 0) + 1;
+      });
+      const pendidikan = Object.entries(pendidikanCount).map(([label, jumlah]) => ({ label, jumlah }));
+
+      // Pekerjaan teratas (top 5)
+      const pekerjaanCount: Record<string, number> = {};
+      (wargaData || []).forEach((w: any) => {
+        const key = (w.pekerjaan || 'Tidak diketahui').toString().trim() || 'Tidak diketahui';
+        pekerjaanCount[key] = (pekerjaanCount[key] || 0) + 1;
+      });
+      const pekerjaanTeratas = Object.entries(pekerjaanCount)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 5)
+        .map(([label, jumlah]) => ({ label, jumlah }));
+
+      // Warga per bulan (tahun berjalan) berdasarkan created_at
+      const currentYear = new Date().getFullYear();
+      const monthNames = [
+        'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun',
+        'Jul', 'Ags', 'Sep', 'Okt', 'Nov', 'Des',
+      ];
+      const wargaPerBulan = monthNames.map((bulan, index) => {
+        const jumlah = (wargaData || []).filter((w: any) => {
+          if (!w.created_at) return false;
+          const d = new Date(w.created_at);
+          return d.getFullYear() === currentYear && d.getMonth() === index;
+        }).length;
+        return { bulan, jumlah };
+      });
+
+      // Status keluarga distribusi (opsional, dari data_keluarga)
+      const statusKeluargaCount: Record<string, number> = {};
+      (keluargaData || []).forEach((k: any) => {
+        const key = (k.status_keluarga || 'Tidak diketahui').toString().trim() || 'Tidak diketahui';
+        statusKeluargaCount[key] = (statusKeluargaCount[key] || 0) + 1;
+      });
+      const statusKeluarga = Object.entries(statusKeluargaCount).map(([label, jumlah]) => ({ label, jumlah }));
+
+      return {
+        totalWarga,
+        totalKeluarga,
+        jenisKelamin,
+        usiaKelompok,
+        agama,
+        pendidikan,
+        pekerjaanTeratas,
+        wargaPerBulan,
+        statusKeluarga,
       };
     } catch (error) {
       throw new HttpException(error.message, 500);

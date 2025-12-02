@@ -23,4 +23,17 @@ export class DashboardController {
       return errorResponse(500, error.message);
     }
   }
+
+  @ApiOperation({ summary: 'Get population dashboard statistics' })
+  @Get('population')
+  async getPopulationDashboard() {
+    try {
+      const result = await this.dashboardService.getPopulationDashboard();
+      const message = 'Population dashboard fetched successfully';
+
+      return successResponse(result, message);
+    } catch (error) {
+      return errorResponse(500, error.message);
+    }
+  }
 }
