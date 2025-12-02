@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsString, IsNotEmpty, IsOptional, IsDateString, IsNumber } from 'class-validator';
 
 export class CreateKegiatanDto {
@@ -32,7 +32,7 @@ export class CreateKegiatanDto {
   @IsNotEmpty()
   penanggung_jawab: string;
 
-  @ApiProperty({ example: 'https://dokumentasi.example.com', required: false })
+  @ApiPropertyOptional({ example: 'https://dokumentasi.example.com' })
   @IsString()
   @IsOptional()
   link_dokumentasi?: string;

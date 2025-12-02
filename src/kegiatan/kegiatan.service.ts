@@ -12,13 +12,20 @@ import {
 export class KegiatanService {
   constructor(private readonly supabaseService: SupabaseService) {}
 
-  async create(userId: string, body: CreateKegiatanDto) {
+  async create(userId: string, body: CreateKegiatanDto, dokumentasiFile?: Express.Multer.File) {
     try {
+      let link_dokumentasi: string | null | undefined;
+
+      if (dokumentasiFile) {
+        link_dokumentasi = await this.supabaseService.uploadFile('kegiatan/photos', dokumentasiFile);
+      }
+
       const { data, error } = await this.supabaseService
         .getClient()
         .from('kegiatan')
         .insert({
           ...body,
+          link_dokumentasi: link_dokumentasi ?? body['link_dokumentasi'],
           created_by: userId,
         })
         .select()
@@ -113,13 +120,26 @@ export class KegiatanService {
     }
   }
 
-  async update(userId: string, id: string, body: UpdateKegiatanDto) {
+  async update(userId: string, id: string, body: UpdateKegiatanDto, dokumentasiFile?: Express.Multer.File) {
     try {
+      const existing = await this.findOne(id);
+      let link_dokumentasi = existing.link_dokumentasi;
+
+      if (dokumentasiFile) {
+        // Remove old photo if exists
+        if (existing.link_dokumentasi) {
+          const oldPhotoPath = this.supabaseService.extractPathFromPublicUrl(existing.link_dokumentasi);
+          await this.supabaseService.removeFile(oldPhotoPath);
+        }
+        link_dokumentasi = await this.supabaseService.uploadFile('kegiatan/photos', dokumentasiFile);
+      }
+
       const { data, error } = await this.supabaseService
         .getClient()
         .from('kegiatan')
         .update({
           ...body,
+          link_dokumentasi,
           created_by: userId,
         })
         .eq('id', id)
@@ -146,6 +166,12 @@ export class KegiatanService {
   async remove(userId: string, id: string) {
     try {
       const data = await this.findOne(id);
+
+      // Remove photo if exists
+      if (data.link_dokumentasi) {
+        const photoPath = this.supabaseService.extractPathFromPublicUrl(data.link_dokumentasi);
+        await this.supabaseService.removeFile(photoPath);
+      }
 
       const { error } = await this.supabaseService
         .getClient()
