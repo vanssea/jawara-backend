@@ -12,13 +12,33 @@ import {
 export class BroadcastService {
   constructor(private readonly supabaseService: SupabaseService) {}
 
-  async create(userId: string, body: CreateBroadcastDto) {
+  async create(
+    userId: string,
+    body: CreateBroadcastDto,
+    files?: {
+      gambar?: Express.Multer.File[];
+      dokumen?: Express.Multer.File[];
+    },
+  ) {
     try {
+      let link_lampiran_gambar: string | null | undefined;
+      let link_lampiran_dokumen: string | null | undefined;
+
+      if (files?.gambar?.[0]) {
+        link_lampiran_gambar = await this.supabaseService.uploadFile('broadcast/images', files.gambar[0]);
+      }
+
+      if (files?.dokumen?.[0]) {
+        link_lampiran_dokumen = await this.supabaseService.uploadFile('broadcast/documents', files.dokumen[0]);
+      }
+
       const { data, error } = await this.supabaseService
         .getClient()
         .from('broadcast')
         .insert({
           ...body,
+          link_lampiran_gambar: link_lampiran_gambar ?? body['link_lampiran_gambar'],
+          link_lampiran_dokumen: link_lampiran_dokumen ?? body['link_lampiran_dokumen'],
           created_by: userId,
         })
         .select()
@@ -73,13 +93,45 @@ export class BroadcastService {
     }
   }
 
-  async update(userId: string, id: string, body: UpdateBroadcastDto) {
+  async update(
+    userId: string,
+    id: string,
+    body: UpdateBroadcastDto,
+    files?: {
+      gambar?: Express.Multer.File[];
+      dokumen?: Express.Multer.File[];
+    },
+  ) {
     try {
+      const existing = await this.findOne(id);
+      let link_lampiran_gambar = existing.link_lampiran_gambar;
+      let link_lampiran_dokumen = existing.link_lampiran_dokumen;
+
+      if (files?.gambar?.[0]) {
+        // Remove old image if exists
+        if (existing.link_lampiran_gambar) {
+          const oldImagePath = this.supabaseService.extractPathFromPublicUrl(existing.link_lampiran_gambar);
+          await this.supabaseService.removeFile(oldImagePath);
+        }
+        link_lampiran_gambar = await this.supabaseService.uploadFile('broadcast/images', files.gambar[0]);
+      }
+
+      if (files?.dokumen?.[0]) {
+        // Remove old document if exists
+        if (existing.link_lampiran_dokumen) {
+          const oldDocPath = this.supabaseService.extractPathFromPublicUrl(existing.link_lampiran_dokumen);
+          await this.supabaseService.removeFile(oldDocPath);
+        }
+        link_lampiran_dokumen = await this.supabaseService.uploadFile('broadcast/documents', files.dokumen[0]);
+      }
+
       const { data, error } = await this.supabaseService
         .getClient()
         .from('broadcast')
         .update({
           ...body,
+          link_lampiran_gambar,
+          link_lampiran_dokumen,
           created_by: userId,
         })
         .eq('id', id)
@@ -106,6 +158,18 @@ export class BroadcastService {
   async remove(userId: string, id: string) {
     try {
       const data = await this.findOne(id);
+
+      // Remove image if exists
+      if (data.link_lampiran_gambar) {
+        const imagePath = this.supabaseService.extractPathFromPublicUrl(data.link_lampiran_gambar);
+        await this.supabaseService.removeFile(imagePath);
+      }
+
+      // Remove document if exists
+      if (data.link_lampiran_dokumen) {
+        const docPath = this.supabaseService.extractPathFromPublicUrl(data.link_lampiran_dokumen);
+        await this.supabaseService.removeFile(docPath);
+      }
 
       const { error } = await this.supabaseService
         .getClient()

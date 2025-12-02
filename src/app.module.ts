@@ -5,7 +5,12 @@ import { AuthModule } from './auth/auth.module';
 import { AppController } from './app.controller';
 import { BroadcastModule } from './broadcast/broadcast.module';
 import { ExpensesModule } from './expenses/expenses.module';
-
+import { MutasiModule } from './mutasi/mutasi.module';
+import { LogAktifitasModule } from './log-aktifitas/log-aktifitas.module';
+import { KegiatanModule } from './kegiatan/kegiatan.module';
+import { TransferChannelModule } from './transfer-channel/transfer-channel.module';
+import { FamiliesModule } from './families/families.module';
+import { KegiatanKategoriModule } from './kegiatan-kategori/kegiatan-kategori.module';
 
 @Module({
   imports: [
@@ -14,6 +19,13 @@ import { ExpensesModule } from './expenses/expenses.module';
     WargaModule,
     BroadcastModule,
     ExpensesModule,
+    MutasiModule,
+    LogAktifitasModule,
+    KegiatanModule,
+    TransferChannelModule,
+    FamiliesModule,
+    KegiatanKategoriModule,
+
   ],
   controllers: [],
   providers: [],
