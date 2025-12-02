@@ -2,6 +2,7 @@ import { Injectable, HttpException } from '@nestjs/common';
 import { SupabaseService } from 'src/common/service/supabase.service';
 import { EventDashboardResponseDto } from './dto/event-dashboard-response.dto';
 import { PopulationDashboardResponseDto } from './dto/population-dashboard-response.dto';
+import { FinanceDashboardResponseDto } from './dto/finance-dashboard-response.dto';
 
 @Injectable()
 export class DashboardService {
@@ -267,6 +268,175 @@ export class DashboardService {
         pekerjaanTeratas,
         wargaPerBulan,
         statusKeluarga,
+      };
+    } catch (error) {
+      throw new HttpException(error.message, 500);
+    }
+  }
+
+  async getFinanceDashboard(): Promise<FinanceDashboardResponseDto> {
+    try {
+      const client = this.supabaseService.getClient();
+
+      const { data: tagihanData, error: tagihanError } = await client
+        .from('pemasukan_tagihan')
+        .select('id, kategori_id, created_at, status, periode')
+        .eq('status', 'Lunas');
+      if (tagihanError) throw new HttpException(tagihanError.message, 500);
+
+      const { data: kategoriData, error: kategoriError } = await client
+        .from('pemasukan_kategori_iuran')
+        .select('id, nama, nominal');
+      if (kategoriError) throw new HttpException(kategoriError.message, 500);
+
+      const { data: nonIuranData, error: nonIuranError } = await client
+        .from('pemasukan_non_iuran')
+        .select('id, nominal, tanggal_pemasukan, kategori_pemasukan, created_at');
+      if (nonIuranError) throw new HttpException(nonIuranError.message, 500);
+
+      const { data: pengeluaranData, error: pengeluaranError } = await client
+        .from('pengeluaran')
+        .select('id, nama, tanggal_transaksi, nominal, kategori_id, created_at, tanggal_terverifikasi')
+        .not('tanggal_terverifikasi', 'is', null);
+      if (pengeluaranError) throw new HttpException(pengeluaranError.message, 500);
+
+      const { data: pengeluaranKategoriData, error: pengeluaranKategoriError } = await client
+        .from('pengeluaran_kategori')
+        .select('id, nama');
+      if (pengeluaranKategoriError) throw new HttpException(pengeluaranKategoriError.message, 500);
+
+      const kategoriMap = new Map<string, { nama: string; nominal: number }>();
+      (kategoriData || []).forEach((row: any) => {
+        kategoriMap.set(row.id, {
+          nama: row.nama || 'Tidak diketahui',
+          nominal: Number(row.nominal) || 0,
+        });
+      });
+
+      let totalPemasukanTagihan = 0;
+      const kategoriSummary: Record<string, { totalNominal: number; jumlahTransaksi: number }> = {};
+      const monthAgg: Record<number, number> = {};
+
+      (tagihanData || []).forEach((row: any) => {
+        const kategori = row.kategori_id ? kategoriMap.get(row.kategori_id) : undefined;
+        if (!kategori) return;
+
+        const nominal = kategori.nominal;
+        totalPemasukanTagihan += nominal;
+
+        const key = kategori.nama;
+        if (!kategoriSummary[key]) {
+          kategoriSummary[key] = { totalNominal: 0, jumlahTransaksi: 0 };
+        }
+        kategoriSummary[key].totalNominal += nominal;
+        kategoriSummary[key].jumlahTransaksi += 1;
+
+        const periodeDate = row.periode ? new Date(row.periode) : row.created_at ? new Date(row.created_at) : null;
+        if (periodeDate && !Number.isNaN(periodeDate.getTime())) {
+          const monthIndex = periodeDate.getMonth();
+          monthAgg[monthIndex] = (monthAgg[monthIndex] || 0) + nominal;
+        }
+      });
+
+      let totalPemasukanNonIuran = 0;
+      (nonIuranData || []).forEach((row: any) => {
+        const nominal = Number(row.nominal) || 0;
+        totalPemasukanNonIuran += nominal;
+
+        // Add to kategori summary
+        const kategoriNama = row.kategori_pemasukan || 'Lainnya';
+        if (!kategoriSummary[kategoriNama]) {
+          kategoriSummary[kategoriNama] = { totalNominal: 0, jumlahTransaksi: 0 };
+        }
+        kategoriSummary[kategoriNama].totalNominal += nominal;
+        kategoriSummary[kategoriNama].jumlahTransaksi += 1;
+
+        const tanggal = row.tanggal_pemasukan || row.created_at;
+        if (tanggal) {
+          const date = new Date(tanggal);
+          const monthIndex = date.getMonth();
+          monthAgg[monthIndex] = (monthAgg[monthIndex] || 0) + nominal;
+        }
+      });
+
+      // Create map for pengeluaran kategori
+      const pengeluaranKategoriMap = new Map<number, string>();
+      (pengeluaranKategoriData || []).forEach((row: any) => {
+        pengeluaranKategoriMap.set(row.id, row.nama || 'Tidak diketahui');
+      });
+
+      // Process pengeluaran
+      let totalPengeluaran = 0;
+      const pengeluaranKategoriSummary: Record<string, { totalNominal: number; jumlahTransaksi: number }> = {};
+      const pengeluaranMonthAgg: Record<number, number> = {};
+
+      (pengeluaranData || []).forEach((row: any) => {
+        const nominal = Number(row.nominal) || 0;
+        totalPengeluaran += nominal;
+
+        const kategoriNama = row.kategori_id 
+          ? pengeluaranKategoriMap.get(row.kategori_id) || 'Lainnya'
+          : 'Lainnya';
+        
+        if (!pengeluaranKategoriSummary[kategoriNama]) {
+          pengeluaranKategoriSummary[kategoriNama] = { totalNominal: 0, jumlahTransaksi: 0 };
+        }
+        pengeluaranKategoriSummary[kategoriNama].totalNominal += nominal;
+        pengeluaranKategoriSummary[kategoriNama].jumlahTransaksi += 1;
+
+        const tanggal = row.tanggal_transaksi || row.created_at;
+        if (tanggal) {
+          const date = new Date(tanggal);
+          const monthIndex = date.getMonth();
+          pengeluaranMonthAgg[monthIndex] = (pengeluaranMonthAgg[monthIndex] || 0) + nominal;
+        }
+      });
+
+      const totalTransaksi = (tagihanData?.length || 0) + (nonIuranData?.length || 0) + (pengeluaranData?.length || 0);
+      const totalPemasukan = totalPemasukanTagihan + totalPemasukanNonIuran;
+      const saldoBersih = totalPemasukan - totalPengeluaran;
+
+      const pemasukanPerKategori = Object.entries(kategoriSummary)
+        .map(([kategori, value]) => ({
+          kategori,
+          jumlahTransaksi: value.jumlahTransaksi,
+          totalNominal: value.totalNominal,
+        }))
+        .sort((a, b) => b.totalNominal - a.totalNominal);
+
+      const pengeluaranPerKategori = Object.entries(pengeluaranKategoriSummary)
+        .map(([kategori, value]) => ({
+          kategori,
+          jumlahTransaksi: value.jumlahTransaksi,
+          totalNominal: value.totalNominal,
+        }))
+        .sort((a, b) => b.totalNominal - a.totalNominal);
+
+      const monthNames = [
+        'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun',
+        'Jul', 'Ags', 'Sep', 'Okt', 'Nov', 'Des',
+      ];
+      const pemasukanPerBulan = monthNames.map((bulan, index) => ({
+        bulan,
+        totalNominal: monthAgg[index] || 0,
+      }));
+
+      const pengeluaranPerBulan = monthNames.map((bulan, index) => ({
+        bulan,
+        totalNominal: pengeluaranMonthAgg[index] || 0,
+      }));
+
+      return {
+        totalPemasukan,
+        totalPemasukanTagihan,
+        totalPemasukanNonIuran,
+        totalPengeluaran,
+        saldoBersih,
+        totalTransaksi,
+        pemasukanPerKategori,
+        pengeluaranPerKategori,
+        pemasukanPerBulan,
+        pengeluaranPerBulan,
       };
     } catch (error) {
       throw new HttpException(error.message, 500);

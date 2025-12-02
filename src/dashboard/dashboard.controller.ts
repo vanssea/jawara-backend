@@ -36,4 +36,17 @@ export class DashboardController {
       return errorResponse(500, error.message);
     }
   }
+
+  @ApiOperation({ summary: 'Get finance dashboard statistics' })
+  @Get('finance')
+  async getFinanceDashboard() {
+    try {
+      const result = await this.dashboardService.getFinanceDashboard();
+      const message = 'Finance dashboard fetched successfully';
+
+      return successResponse(result, message);
+    } catch (error) {
+      return errorResponse(500, error.message);
+    }
+  }
 }
