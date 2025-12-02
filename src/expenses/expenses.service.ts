@@ -13,33 +13,41 @@ export class ExpensesService {
   constructor(private readonly supabaseService: SupabaseService) {}
 
   // CREATE
-  async create(userId: string, body: CreateExpensesDto) {
-    try {
-      const { data, error } = await this.supabaseService
-        .getClient()
-        .from('pengeluaran')
-        .insert({
-          ...body,
-          created_by: userId,
-        })
-        .select()
-        .single();
+  // CREATE
+async create(userId: string, body: CreateExpensesDto) {
+  try {
+    const payload = {
+      nama: body.nama,
+      kategori_id: body.kategori_id,
+      tanggal_transaksi: body.tanggal_transaksi,
+      nominal: body.nominal,
+      tanggal_terverifikasi: body.tanggal_terverifikasi ?? null,
+      verifikator: body.verifikator ?? null,
+    };
 
-      if (error) throw new HttpException(error.message, 500);
+    const { data, error } = await this.supabaseService
+      .getClient()
+      .from('pengeluaran')
+      .insert(payload)
+      .select()
+      .single();
 
-      await this.supabaseService
-        .getClient()
-        .from('pengeluaran')
-        .insert({
-          aktor_id: userId,
-          deskripsi: createActivity('expenses', body.nama_pengeluaran),
-        });
+    if (error) throw new HttpException(error.message, 500);
 
-      return data;
-    } catch (err) {
-      throw new HttpException(err.message, 500);
-    }
+    // Insert ke tabel LOG (asumsi nama tabel: aktivitas)
+    await this.supabaseService
+      .getClient()
+      .from('aktivitas')   // ⬅ ubah sesuai nama tabel log kamu
+      .insert({
+        aktor_id: userId,
+        deskripsi: createActivity('expenses', body.nama),
+      });
+
+    return data;
+  } catch (err) {
+    throw new HttpException(err.message, 500);
   }
+}
 
   // READ ALL
   async findAll() {

@@ -1,24 +1,34 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { 
+  IsString, 
+  IsUUID, 
+  IsOptional, 
+  IsNumber, 
+  IsDateString, 
+  IsInt 
+} from 'class-validator';
 
 export class CreateExpensesDto {
-  @ApiProperty({ example: 'Masukkan nama pengeluaran' })
-  nama_pengeluaran: string;
+  @IsString()
+  nama: string;
 
-  @ApiProperty({ example: '2025-11-19 10:16:00+07:00' })
-  tanggal_pengeluaran: Date;
+  @IsInt()
+  kategori_id: number;
 
-  @ApiProperty({ example: 1500000 })
-  jumlah_pengeluaran: number;
+  @IsDateString()
+  tanggal_transaksi: string;
 
+  @IsNumber()
+  nominal: number;
 
-  @ApiProperty({
-    example: 'Makanan',
-    description: 'Kategori pengeluaran yang dipilih dari daftar yang tersedia.',
-    // Gunakan 'enum' untuk mendokumentasikan semua pilihan yang mungkin di Swagger
-    enum: ['Transportasi', 'Makanan', 'Akomodasi', 'Lain-lain'], 
-  })
-  kategori: string;
+  @IsOptional()
+  @IsDateString()
+  tanggal_terverifikasi?: string;
 
-  @ApiProperty({ example: '.jpg atau .png' })
-  bukti_pengeluaran: string;
+  @IsOptional()
+  @IsUUID()
+  verifikator?: string;
 }
+function IsNotEmpty(arg0: { message: string; }): (target: CreateExpensesDto, propertyKey: "nama") => void {
+  throw new Error('Function not implemented.');
+}
+
