@@ -1,26 +1,36 @@
 import { HttpException, Injectable } from '@nestjs/common';
-import { SupabaseService } from 'src/common/service/supabase.service';
 import { CreatePemasukkanNonIuranDto } from './dto/create-pemasukkan_non_iuran.dto';
 import { UpdatePemasukkanNonIuranDto } from './dto/update-pemasukkan_non_iuran.dto';
-import {
-  createActivity,
-  deleteActivity,
-  updateActivity,
-} from 'utils/log.utils';
+import { SupabaseService } from 'src/common/service/supabase.service';
+import { createActivity, updateActivity, deleteActivity } from 'utils/log.utils';
 
 @Injectable()
 export class PemasukkanNonIuranService {
   constructor(private readonly supabaseService: SupabaseService) {}
 
-  // CREATE
-  async create(userId: string, body: CreatePemasukkanNonIuranDto) {
+  async create(
+    userId: string,
+    body: CreatePemasukkanNonIuranDto,
+    files?: { bukti?: Express.Multer.File[] },
+  ) {
     try {
+      let link_bukti_pemasukan: string | null | undefined;
+
+      // Upload file bukti
+      if (files?.bukti?.[0]) {
+        link_bukti_pemasukan = await this.supabaseService.uploadFile(
+          'pemasukan_non_iuran/bukti',
+          files.bukti[0],
+        );
+      }
+
       const { data, error } = await this.supabaseService
         .getClient()
         .from('pemasukan_non_iuran')
         .insert({
           ...body,
-          // created_at otomatis oleh Supabase
+          link_bukti_pemasukan:
+            link_bukti_pemasukan ?? body.link_bukti_pemasukan,
         })
         .select()
         .single();
@@ -28,57 +38,85 @@ export class PemasukkanNonIuranService {
       if (error) throw new HttpException(error.message, 500);
 
       // Log aktivitas
-      await this.supabaseService
+      const { error: logsError } = await this.supabaseService
         .getClient()
-        .from('pengeluaran')
+        .from('log_aktifitas')
         .insert({
           aktor_id: userId,
           deskripsi: createActivity('pemasukan_non_iuran', body.nama),
         });
 
+      if (logsError) throw new HttpException(logsError.message, 500);
+
       return data;
-    } catch (err) {
-      throw new HttpException(err.message, 500);
+    } catch (error) {
+      throw new HttpException(error.message, 500);
     }
   }
 
-  // READ ALL
   async findAll() {
-    const { data, error } = await this.supabaseService
-      .getClient()
-      .from('pemasukan_non_iuran')
-      .select('*');
+    try {
+      const { data, error } = await this.supabaseService
+        .getClient()
+        .from('pemasukan_non_iuran')
+        .select('*');
 
-    if (error) throw new HttpException(error.message, 500);
-    return data;
+      if (error) throw new HttpException(error.message, 500);
+
+      return data;
+    } catch (error) {
+      throw new HttpException(error.message, 500);
+    }
   }
 
-  // READ ONE by ID
   async findOne(id: string) {
-    const { data, error } = await this.supabaseService
-      .getClient()
-      .from('pemasukan_non_iuran')
-      .select('*')
-      .eq('id', id)
-      .single();
+    try {
+      const { data, error } = await this.supabaseService
+        .getClient()
+        .from('pemasukan_non_iuran')
+        .select('*')
+        .eq('id', id)
+        .single();
 
-    if (error) throw new HttpException(error.message, 500);
-    return data;
+      if (error) throw new HttpException(error.message, 500);
+
+      return data;
+    } catch (error) {
+      throw new HttpException(error.message, 500);
+    }
   }
 
-  // UPDATE
   async update(
     userId: string,
     id: string,
     body: UpdatePemasukkanNonIuranDto,
+    files?: { bukti?: Express.Multer.File[] },
   ) {
     try {
+      const existing = await this.findOne(id);
+      let link_bukti_pemasukan = existing.link_bukti_pemasukan;
+
+      // Upload bukti baru
+      if (files?.bukti?.[0]) {
+        if (existing.link_bukti_pemasukan) {
+          const oldPath = this.supabaseService.extractPathFromPublicUrl(
+            existing.link_bukti_pemasukan,
+          );
+          await this.supabaseService.removeFile(oldPath);
+        }
+
+        link_bukti_pemasukan = await this.supabaseService.uploadFile(
+          'pemasukan_non_iuran/bukti',
+          files.bukti[0],
+        );
+      }
+
       const { data, error } = await this.supabaseService
         .getClient()
         .from('pemasukan_non_iuran')
         .update({
           ...body,
-          // updated_at otomatis jika diatur di Supabase trigger
+          link_bukti_pemasukan,
         })
         .eq('id', id)
         .select()
@@ -86,25 +124,34 @@ export class PemasukkanNonIuranService {
 
       if (error) throw new HttpException(error.message, 500);
 
-      // Log aktivitas
-      await this.supabaseService
+      // Log
+      const { error: logsError } = await this.supabaseService
         .getClient()
-        .from('pengeluaran')
+        .from('log_aktifitas')
         .insert({
           aktor_id: userId,
           deskripsi: updateActivity('pemasukan_non_iuran', data.nama),
         });
 
+      if (logsError) throw new HttpException(logsError.message, 500);
+
       return data;
-    } catch (err) {
-      throw new HttpException(err.message, 500);
+    } catch (error) {
+      throw new HttpException(error.message, 500);
     }
   }
 
-  // DELETE
   async remove(userId: string, id: string) {
     try {
-      const oldData = await this.findOne(id);
+      const data = await this.findOne(id);
+
+      // Hapus bukti jika ada
+      if (data.link_bukti_pemasukan) {
+        const path = this.supabaseService.extractPathFromPublicUrl(
+          data.link_bukti_pemasukan,
+        );
+        await this.supabaseService.removeFile(path);
+      }
 
       const { error } = await this.supabaseService
         .getClient()
@@ -114,19 +161,18 @@ export class PemasukkanNonIuranService {
 
       if (error) throw new HttpException(error.message, 500);
 
-      // Log aktivitas
-      await this.supabaseService
+      // Log hapus
+      const { error: logsError } = await this.supabaseService
         .getClient()
-        .from('pengeluaran')
+        .from('log_aktifitas')
         .insert({
           aktor_id: userId,
-          deskripsi: deleteActivity(
-            'pemasukan_non_iuran',
-            oldData.nama,
-          ),
+          deskripsi: deleteActivity('pemasukan_non_iuran', data.nama),
         });
-    } catch (err) {
-      throw new HttpException(err.message, 500);
+
+      if (logsError) throw new HttpException(logsError.message, 500);
+    } catch (error) {
+      throw new HttpException(error.message, 500);
     }
   }
 }

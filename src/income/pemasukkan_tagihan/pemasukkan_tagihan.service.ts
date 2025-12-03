@@ -15,26 +15,28 @@ export class PemasukkanTagihanService {
   // CREATE
   async create(userId: string, body: CreatePemasukkanTagihanDto) {
     try {
+      const payload = {
+        nama: body.nama,
+        kategori_id: body.kategori_id,
+        periode: body.periode,
+        status: body.status,
+        keluarga_id: body.keluarga_id,
+      };
+
       const { data, error } = await this.supabaseService
         .getClient()
         .from('pemasukan_tagihan')
-        .insert({
-          ...body,
-          created_by: userId,
-        })
+        .insert(payload)
         .select()
         .single();
 
       if (error) throw new HttpException(error.message, 500);
 
       // Log aktivitas
-      await this.supabaseService
-        .getClient()
-        .from('pengeluaran')
-        .insert({
-          aktor_id: userId,
-          deskripsi: createActivity('pemasukan_tagihan', body.nama),
-        });
+      await this.supabaseService.getClient().from('pengeluaran').insert({
+        aktor_id: userId,
+        deskripsi: createActivity('pemasukan_tagihan', body.nama),
+      });
 
       return data;
     } catch (err) {
@@ -53,7 +55,7 @@ export class PemasukkanTagihanService {
     return data;
   }
 
-  // READ ONE by ID
+  // READ ONE
   async findOne(id: string) {
     const { data, error } = await this.supabaseService
       .getClient()
@@ -73,13 +75,18 @@ export class PemasukkanTagihanService {
     body: UpdatePemasukkanTagihanDto,
   ) {
     try {
+      const payload = {
+        ...(body.nama && { nama: body.nama }),
+        ...(body.kategori_id && { kategori_id: body.kategori_id }),
+        ...(body.periode && { periode: body.periode }),
+        ...(body.status && { status: body.status }),
+        ...(body.keluarga_id && { keluarga_id: body.keluarga_id }),
+      };
+
       const { data, error } = await this.supabaseService
         .getClient()
         .from('pemasukan_tagihan')
-        .update({
-          ...body,
-          updated_by: userId,
-        })
+        .update(payload)
         .eq('id', id)
         .select()
         .single();
@@ -87,13 +94,10 @@ export class PemasukkanTagihanService {
       if (error) throw new HttpException(error.message, 500);
 
       // Log aktivitas
-      await this.supabaseService
-        .getClient()
-        .from('pengeluaran')
-        .insert({
-          aktor_id: userId,
-          deskripsi: updateActivity('pemasukan_tagihan', data.nama),
-        });
+      await this.supabaseService.getClient().from('pengeluaran').insert({
+        aktor_id: userId,
+        deskripsi: updateActivity('pemasukan_tagihan', data.nama),
+      });
 
       return data;
     } catch (err) {
@@ -115,16 +119,15 @@ export class PemasukkanTagihanService {
       if (error) throw new HttpException(error.message, 500);
 
       // Log aktivitas
-      await this.supabaseService
-        .getClient()
-        .from('pengeluaran')
-        .insert({
-          aktor_id: userId,
-          deskripsi: deleteActivity(
-            'pemasukan_tagihan',
-            oldData.nama,
-          ),
-        });
+      await this.supabaseService.getClient().from('pengeluaran').insert({
+        aktor_id: userId,
+        deskripsi: deleteActivity(
+          'pemasukan_tagihan',
+          oldData.nama,
+        ),
+      });
+
+      return { message: 'Data berhasil dihapus' };
     } catch (err) {
       throw new HttpException(err.message, 500);
     }

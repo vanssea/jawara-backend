@@ -13,6 +13,8 @@ import { FamiliesModule } from './families/families.module';
 import { KegiatanKategoriModule } from './kegiatan-kategori/kegiatan-kategori.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { PemasukanKategoriIuranModule } from './income/pemasukkan_kategori/pemasukkan_kategori_iuran.module';
+import { PemasukkanNonIuranModule } from './income/pemasukkan_noniuran/pemasukkan_non_iuran.module';
+import { PemasukkanTagihanModule } from './income/pemasukkan_tagihan/pemasukkan_tagihan.module';
 
 @Module({
   imports: [
@@ -28,7 +30,9 @@ import { PemasukanKategoriIuranModule } from './income/pemasukkan_kategori/pemas
     FamiliesModule,
     KegiatanKategoriModule,
     DashboardModule,
-    PemasukanKategoriIuranModule
+    PemasukanKategoriIuranModule,
+    PemasukkanNonIuranModule,
+    PemasukkanTagihanModule,
 
   ],
   controllers: [],
