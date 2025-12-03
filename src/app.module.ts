@@ -15,6 +15,7 @@ import { DashboardModule } from './dashboard/dashboard.module';
 import { PemasukanKategoriIuranModule } from './income/pemasukkan_kategori/pemasukkan_kategori_iuran.module';
 import { PemasukkanNonIuranModule } from './income/pemasukkan_noniuran/pemasukkan_non_iuran.module';
 import { PemasukkanTagihanModule } from './income/pemasukkan_tagihan/pemasukkan_tagihan.module';
+import { PenerimaanWargaModule } from './penerimaan-warga/penerimaan-warga.module';
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { PemasukkanTagihanModule } from './income/pemasukkan_tagihan/pemasukkan_
     PemasukanKategoriIuranModule,
     PemasukkanNonIuranModule,
     PemasukkanTagihanModule,
+    PenerimaanWargaModule,
 
   ],
   controllers: [],
