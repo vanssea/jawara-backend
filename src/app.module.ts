@@ -11,6 +11,8 @@ import { KegiatanModule } from './kegiatan/kegiatan.module';
 import { TransferChannelModule } from './transfer-channel/transfer-channel.module';
 import { FamiliesModule } from './families/families.module';
 import { KegiatanKategoriModule } from './kegiatan-kategori/kegiatan-kategori.module';
+import { ReportModule } from './reports/reports.module';
+
 
 @Module({
   imports: [
@@ -25,7 +27,7 @@ import { KegiatanKategoriModule } from './kegiatan-kategori/kegiatan-kategori.mo
     TransferChannelModule,
     FamiliesModule,
     KegiatanKategoriModule,
-
+    ReportModule,
   ],
   controllers: [],
   providers: [],
