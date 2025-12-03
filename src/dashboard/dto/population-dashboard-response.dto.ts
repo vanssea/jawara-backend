@@ -26,7 +26,7 @@ export class PopulationDashboardResponseDto {
     bulan: string;
     jumlah: number;
   }>;
-  statusKeluarga: Array<{
+  statusWarga: Array<{
     label: string;
     jumlah: number;
   }>;
