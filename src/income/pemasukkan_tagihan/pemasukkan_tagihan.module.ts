@@ -8,4 +8,4 @@ import { CommonModule } from 'src/common/common.module';
   controllers: [PemasukkanTagihanController],
   providers: [PemasukkanTagihanService],
 })
-export class ExpensesModule {}
+export class PemasukkanTagihanModule {}
