@@ -12,10 +12,14 @@ import { PemasukanKategoriIuranService } from './pemasukkan_kategori_iuran.servi
 import { CreatePemasukanKategoriIuranDto } from './dto/create-pemasukkan_kategori_iuran.dto';
 import { UpdatePemasukanKategoriIuranDto } from './dto/update-pemasukkan_kategori_iuran.dto';
 import { AuthGuard } from 'src/auth/guards/auth.guard';
-import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger';
 import { Auth } from 'src/common/decorator/auth.decorator';
-import { AuthUser } from 'src/common/types/types';
 import { errorResponse, successResponse } from 'utils/response.utils';
+import { AuthUser } from 'src/common/types/types';
 
 @ApiBearerAuth()
 @UseGuards(AuthGuard)
@@ -23,21 +27,20 @@ import { errorResponse, successResponse } from 'utils/response.utils';
 @Controller('pemasukan-kategori-iuran')
 export class PemasukanKategoriIuranController {
   constructor(
-    private readonly pemasukanKategoriIuranService: PemasukanKategoriIuranService,
+    private readonly kategoriService: PemasukanKategoriIuranService,
   ) {}
 
-  @ApiOperation({ summary: 'Create kategori iuran' })
+  @ApiOperation({ summary: 'Create new kategori iuran' })
   @Post()
   async create(
     @Auth() user: AuthUser,
     @Body() body: CreatePemasukanKategoriIuranDto,
   ) {
     try {
-      const result = await this.pemasukanKategoriIuranService.create(
-        user.sub,
-        body,
-      );
-      return successResponse(result, 'Kategori iuran berhasil dibuat');
+      const result = await this.kategoriService.create(user.sub, body);
+      const message = 'Kategori iuran created successfully';
+
+      return successResponse(result, message);
     } catch (error) {
       return errorResponse(500, error.message);
     }
@@ -47,8 +50,10 @@ export class PemasukanKategoriIuranController {
   @Get()
   async findAll() {
     try {
-      const result = await this.pemasukanKategoriIuranService.findAll();
-      return successResponse(result, 'Kategori iuran berhasil diambil');
+      const result = await this.kategoriService.findAll();
+      const message = 'Kategori iuran fetched successfully';
+
+      return successResponse(result, message);
     } catch (error) {
       return errorResponse(500, error.message);
     }
@@ -58,11 +63,10 @@ export class PemasukanKategoriIuranController {
   @Get(':id')
   async findOne(@Param('id') id: string) {
     try {
-      const result = await this.pemasukanKategoriIuranService.findOne(id);
-      return successResponse(
-        result,
-        `Kategori iuran ${id} berhasil diambil`,
-      );
+      const result = await this.kategoriService.findOne(id);
+      const message = `Kategori iuran ${id} fetched successfully`;
+
+      return successResponse(result, message);
     } catch (error) {
       return errorResponse(500, error.message);
     }
@@ -76,15 +80,10 @@ export class PemasukanKategoriIuranController {
     @Body() body: UpdatePemasukanKategoriIuranDto,
   ) {
     try {
-      const result = await this.pemasukanKategoriIuranService.update(
-        user.sub,
-        id,
-        body,
-      );
-      return successResponse(
-        result,
-        `Kategori iuran ${id} berhasil diperbarui`,
-      );
+      const result = await this.kategoriService.update(user.sub, id, body);
+      const message = `Kategori iuran ${id} updated successfully`;
+
+      return successResponse(result, message);
     } catch (error) {
       return errorResponse(500, error.message);
     }
@@ -94,11 +93,10 @@ export class PemasukanKategoriIuranController {
   @Delete(':id')
   async remove(@Param('id') id: string, @Auth() user: AuthUser) {
     try {
-      await this.pemasukanKategoriIuranService.remove(user.sub, id);
-      return successResponse(
-        null,
-        `Kategori iuran ${id} berhasil dihapus`,
-      );
+      await this.kategoriService.remove(user.sub, id);
+      const message = `Kategori iuran ${id} deleted successfully`;
+
+      return successResponse(null, message);
     } catch (error) {
       return errorResponse(500, error.message);
     }
