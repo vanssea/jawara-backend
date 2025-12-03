@@ -13,6 +13,7 @@ import { FamiliesModule } from './families/families.module';
 import { KegiatanKategoriModule } from './kegiatan-kategori/kegiatan-kategori.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { PenerimaanWargaModule } from './penerimaan-warga/penerimaan-warga.module';
+import { RumahModule } from './rumah/rumah.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { PenerimaanWargaModule } from './penerimaan-warga/penerimaan-warga.modul
     KegiatanKategoriModule,
     DashboardModule,
     PenerimaanWargaModule,
+    RumahModule
 
   ],
   controllers: [],
