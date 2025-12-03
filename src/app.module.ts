@@ -12,6 +12,7 @@ import { TransferChannelModule } from './transfer-channel/transfer-channel.modul
 import { FamiliesModule } from './families/families.module';
 import { KegiatanKategoriModule } from './kegiatan-kategori/kegiatan-kategori.module';
 import { DashboardModule } from './dashboard/dashboard.module';
+import { PenerimaanWargaModule } from './penerimaan-warga/penerimaan-warga.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { DashboardModule } from './dashboard/dashboard.module';
     FamiliesModule,
     KegiatanKategoriModule,
     DashboardModule,
+    PenerimaanWargaModule,
 
   ],
   controllers: [],
