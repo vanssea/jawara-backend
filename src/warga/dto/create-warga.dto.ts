@@ -57,6 +57,11 @@ export class CreateWargaDto {
   @IsString()
   status?: string;
 
+    @ApiProperty({ example: 'https://example.com/photo.jpg', required: false, description: 'URL foto identitas warga' })
+    @IsOptional()
+    @IsString()
+    foto_identitas?: string;
+
   // di DB default gen_random_uuid(), tapi biasanya ini FK ke data_keluarga,
   // jadi dari sisi API kita terima saja
   @ApiProperty({ example: 'd3b07384-d9a0-4a2f-bf7e-123456789abc', required: false, description: 'ID keluarga (FK ke data_keluarga)', })
