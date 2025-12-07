@@ -33,7 +33,9 @@ describe('AuthService', () => {
     mockSupabaseClient.auth.signUp = mockSignUp;
 
     // Ensure the service returns the same client with our bound mocks
-    (mockSupabaseService.getClient as MockFn).mockReturnValue(mockSupabaseClient);
+    (mockSupabaseService.getClient as MockFn).mockReturnValue(
+      mockSupabaseClient,
+    );
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -58,7 +60,10 @@ describe('AuthService', () => {
         error: null,
       });
 
-      const result = await service.login({ email: 'a@b.com', password: 'pwd' } as any);
+      const result = await service.login({
+        email: 'a@b.com',
+        password: 'pwd',
+      } as any);
 
       expect(result).toEqual({
         message: 'success',
@@ -106,7 +111,10 @@ describe('AuthService', () => {
         error: null,
       });
 
-      const result = await service.register({ email: 'new@user.com', password: 'pwd' } as any);
+      const result = await service.register({
+        email: 'new@user.com',
+        password: 'pwd',
+      } as any);
 
       expect(result).toEqual({
         message: 'success',
@@ -130,7 +138,10 @@ describe('AuthService', () => {
         error: null,
       });
 
-      const result = await service.register({ email: 'no-session@u.com', password: 'pwd' } as any);
+      const result = await service.register({
+        email: 'no-session@u.com',
+        password: 'pwd',
+      } as any);
 
       expect(result).toEqual({
         message: 'success',
