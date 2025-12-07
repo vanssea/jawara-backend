@@ -11,7 +11,7 @@ import { UpdateWargaDto } from './dto/update-warga.dto';
 export class WargaService {
   private readonly tableName = 'data_warga';
   private readonly selectColumns = 
-    'id, nama, tempat_lahir, tanggal_lahir, no_telp, jenis_kelamin, agama, golongan_darah, pendidikan_terakhir, pekerjaan, peran, status, keluarga_id, created_at';
+    'id, nama, tempat_lahir, tanggal_lahir, no_telp, jenis_kelamin, agama, golongan_darah, pendidikan_terakhir, pekerjaan, peran, status, status_penerimaan, foto_identitas, keluarga_id, created_at';
 
   constructor(private readonly supabaseService: SupabaseService) {}
 
@@ -19,12 +19,17 @@ export class WargaService {
     return this.supabaseService.getClient();
   }
 
-  async create(createWargaDto: CreateWargaDto) {
+  async create(createWargaDto: CreateWargaDto, fotoFile?: Express.Multer.File) {
     // Explicitly set keluarga_id to null if not provided or empty
     const insertData = {
       ...createWargaDto,
       keluarga_id: createWargaDto.keluarga_id || null,
     };
+    // Upload foto identitas if provided
+    if (fotoFile) {
+      const uploaded = await this.supabaseService.uploadFile('warga/photos', fotoFile);
+      insertData['foto_identitas'] = uploaded ?? insertData['foto_identitas'];
+    }
     
     const { data, error } = await this.client
       .from(this.tableName)
@@ -42,7 +47,16 @@ export class WargaService {
   async findAll() {
     const { data, error } = await this.client
       .from(this.tableName)
-      .select(this.selectColumns)
+      .select(`
+        id, nama, tempat_lahir, tanggal_lahir, no_telp, jenis_kelamin, 
+        agama, golongan_darah, pendidikan_terakhir, pekerjaan, peran, 
+        status, status_penerimaan, foto_identitas, created_at,
+        keluarga_id (
+          id,
+          nama
+        )
+      `)
+      .or('status_penerimaan.is.null,status_penerimaan.eq.diterima')
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -55,7 +69,15 @@ export class WargaService {
   async findOne(id: string) {
     const { data, error } = await this.client
       .from(this.tableName)
-      .select(this.selectColumns)
+      .select(`
+        id, nama, tempat_lahir, tanggal_lahir, no_telp, jenis_kelamin, 
+        agama, golongan_darah, pendidikan_terakhir, pekerjaan, peran, 
+        status, status_penerimaan, foto_identitas, created_at,
+        keluarga_id (
+          id,
+          nama
+        )
+      `)
       .eq('id', id)
       .single();
 
@@ -77,10 +99,27 @@ export class WargaService {
     return data;
   }
 
-  async update(id: string, updateWargaDto: UpdateWargaDto) {
+  async update(id: string, updateWargaDto: UpdateWargaDto, fotoFile?: Express.Multer.File) {
+    // fetch existing to manage old photo removal when replacing
+    const existing = await this.findOne(id);
+
+    let foto_identitas = existing.foto_identitas;
+
+    if (fotoFile) {
+      // Remove old photo if exists
+      if (existing.foto_identitas) {
+        const oldPath = this.supabaseService.extractPathFromPublicUrl(existing.foto_identitas);
+        await this.supabaseService.removeFile(oldPath);
+      }
+      foto_identitas = await this.supabaseService.uploadFile('warga/photos', fotoFile);
+    }
+
     const { data, error } = await this.client
       .from(this.tableName)
-      .update(updateWargaDto)
+      .update({
+        ...updateWargaDto,
+        foto_identitas,
+      })
       .eq('id', id)
       .select(this.selectColumns)
       .single();

@@ -123,14 +123,6 @@ export class DashboardService {
         return { bulan, jumlah };
       });
 
-      // Calculate tingkat partisipasi (mock data - adjust based on your schema)
-      // Assuming you might have participant data in the future
-      const totalUndangan = totalKegiatan * 10; // Mock: 10 invitations per event
-      const totalPeserta = Math.floor(totalUndangan * 0.78); // Mock: 78% attendance
-      const persentase = totalUndangan > 0 
-        ? Math.round((totalPeserta / totalUndangan) * 100) 
-        : 0;
-
       return {
         totalKegiatan,
         kegiatanPerKategori,
@@ -141,11 +133,6 @@ export class DashboardService {
         },
         penanggungJawabTerbanyak,
         kegiatanPerBulan,
-        tingkatPartisipasi: {
-          persentase,
-          totalPeserta,
-          totalUndangan,
-        },
       };
     } catch (error) {
       throw new HttpException(error.message, 500);
@@ -156,15 +143,15 @@ export class DashboardService {
     try {
       const client = this.supabaseService.getClient();
 
-      // Fetch warga and keluarga data
+      // Fetch warga data
       const { data: wargaData, error: wargaError } = await client
         .from('data_warga')
-        .select('id, jenis_kelamin, tanggal_lahir, agama, pendidikan_terakhir, pekerjaan, created_at');
+        .select('id, jenis_kelamin, tanggal_lahir, agama, pendidikan_terakhir, pekerjaan, created_at, status');
       if (wargaError) throw new HttpException(wargaError.message, 500);
 
       const { data: keluargaData, error: keluargaError } = await client
         .from('data_keluarga')
-        .select('id, status_keluarga, created_at');
+        .select('id, created_at');
       if (keluargaError) throw new HttpException(keluargaError.message, 500);
 
       const totalWarga = wargaData?.length || 0;
@@ -250,13 +237,19 @@ export class DashboardService {
         return { bulan, jumlah };
       });
 
-      // Status keluarga distribusi (opsional, dari data_keluarga)
-      const statusKeluargaCount: Record<string, number> = {};
-      (keluargaData || []).forEach((k: any) => {
-        const key = (k.status_keluarga || 'Tidak diketahui').toString().trim() || 'Tidak diketahui';
-        statusKeluargaCount[key] = (statusKeluargaCount[key] || 0) + 1;
+      // Status warga distribusi (aktif/nonaktif)
+      const statusWargaCount: Record<string, number> = {
+        'Aktif': 0,
+        'Nonaktif': 0,
+      };
+      (wargaData || []).forEach((w: any) => {
+        // Hanya hitung jika status tidak null
+        if (w.status !== null && w.status !== undefined) {
+          const key = w.status ? 'Aktif' : 'Nonaktif';
+          statusWargaCount[key] = (statusWargaCount[key] || 0) + 1;
+        }
       });
-      const statusKeluarga = Object.entries(statusKeluargaCount).map(([label, jumlah]) => ({ label, jumlah }));
+      const statusWarga = Object.entries(statusWargaCount).map(([label, jumlah]) => ({ label, jumlah }));
 
       return {
         totalWarga,
@@ -267,7 +260,7 @@ export class DashboardService {
         pendidikan,
         pekerjaanTeratas,
         wargaPerBulan,
-        statusKeluarga,
+        statusWarga,
       };
     } catch (error) {
       throw new HttpException(error.message, 500);

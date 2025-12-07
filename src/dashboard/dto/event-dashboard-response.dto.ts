@@ -18,9 +18,4 @@ export class EventDashboardResponseDto {
     bulan: string;
     jumlah: number;
   }>;
-  tingkatPartisipasi: {
-    persentase: number;
-    totalPeserta: number;
-    totalUndangan: number;
-  };
 }
