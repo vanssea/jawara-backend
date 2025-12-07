@@ -16,6 +16,7 @@ import { PemasukanKategoriIuranModule } from './income/pemasukkan_kategori/pemas
 import { PemasukkanNonIuranModule } from './income/pemasukkan_noniuran/pemasukkan_non_iuran.module';
 import { PemasukkanTagihanModule } from './income/pemasukkan_tagihan/pemasukkan_tagihan.module';
 import { PenerimaanWargaModule } from './penerimaan-warga/penerimaan-warga.module';
+import { PesanAspirasiModule } from './PesanWarga/pesan_warga.module';
 
 @Module({
   imports: [
@@ -35,7 +36,7 @@ import { PenerimaanWargaModule } from './penerimaan-warga/penerimaan-warga.modul
     PemasukkanNonIuranModule,
     PemasukkanTagihanModule,
     PenerimaanWargaModule,
-
+    PesanAspirasiModule,
   ],
   controllers: [],
   providers: [],
