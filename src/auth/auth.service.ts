@@ -54,8 +54,8 @@ export class AuthService {
       throw new HttpException('Failed to create auth user', 500);
     }
 
-    const { error: profileError } = await adminClient
-      .from('profiles')
+    const { error: userError } = await adminClient
+      .from('users')
       .insert({
         id: user.id,
         phone: request.phone,
@@ -64,9 +64,9 @@ export class AuthService {
       .select('*')
       .single();
 
-    if (profileError) {
+    if (userError) {
       await adminClient.auth.admin.deleteUser(user.id);
-      throw new HttpException(profileError.message, 500);
+      throw new HttpException(userError.message, 500);
     }
 
     return {
