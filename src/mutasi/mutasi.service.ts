@@ -51,7 +51,7 @@ export class MutasiService {
     try {
       const { data, error } = await this.client
         .from(this.tableName)
-        .select('*')
+        .select('*, mutasi_jenis(id, nama)')
         .order('created_at', { ascending: false });
 
       if (error) throw new HttpException(error.message, 500);
@@ -67,7 +67,7 @@ export class MutasiService {
     try {
       const { data, error } = await this.client
         .from(this.tableName)
-        .select('*')
+        .select('*, mutasi_jenis(id, nama)')
         .eq('id', id)
         .single();
 
