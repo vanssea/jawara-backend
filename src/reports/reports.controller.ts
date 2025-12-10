@@ -14,6 +14,7 @@ import { AuthGuard } from 'src/auth/guards/auth.guard';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { errorResponse, successResponse } from 'utils/response.utils';
 import { FilterDateDto } from './dto/filter-date.dto';
+import { FilterPdfDto } from './dto/filter-pdf.dto';
 
 @ApiBearerAuth()
 @UseGuards(AuthGuard)
@@ -67,6 +68,31 @@ export class ReportsController {
             return successResponse(result, `Income ${id} fetched successfully`);
         } catch (error) {
             return errorResponse(500, error.message);
+        }
+    }
+
+    // ----------------------------------------------------------------------
+    // POST PDF EXPORT
+    // ----------------------------------------------------------------------
+    @ApiOperation({ summary: 'Generate PDF report (incoming/outgoing/all)' })
+    @Post('pdf')
+    async downloadPdf(@Body() body: FilterPdfDto, @Res() res: Response) {
+        try {
+            const pdfBuffer = await this.reportsService.generatePdfReport(
+                body.reportType,
+                body.startDate,
+                body.endDate,
+            );
+
+            res.setHeader('Content-Type', 'application/pdf');
+            res.setHeader(
+                'Content-Disposition',
+                `attachment; filename="report-${body.reportType}-${body.startDate}-${body.endDate}.pdf"`,
+            );
+
+            return res.send(pdfBuffer);
+        } catch (error) {
+            throw new HttpException(error.message || 'Failed to generate PDF', 500);
         }
     }
 }
