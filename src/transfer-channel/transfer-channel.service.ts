@@ -67,7 +67,12 @@ export class TransferChannelService {
       const { data, error } = await this.supabaseService
         .getAdminClient()
         .from('transfer_channel')
-        .select('*');
+        .select(
+          `
+          *,
+          warga:data_warga(nama)
+        `,
+        );
 
       if (error) throw new HttpException(error.message, 500);
 
@@ -82,7 +87,12 @@ export class TransferChannelService {
       const { data, error } = await this.supabaseService
         .getAdminClient()
         .from('transfer_channel')
-        .select('*')
+        .select(
+          `
+          *,
+          warga:data_warga(nama)
+        `,
+        )
         .eq('id', id)
         .single();
 
