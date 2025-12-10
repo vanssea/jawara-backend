@@ -58,6 +58,7 @@ export class AuthService {
       .from('users')
       .insert({
         id: user.id,
+        full_name: request.name,
         phone: request.phone,
         role: UserRole.WARGA,
       })

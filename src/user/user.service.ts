@@ -22,7 +22,7 @@ export class UsersService {
     const metadata = authUser?.user_metadata || {};
     return {
       id: authUser?.id ?? userRow?.id,
-      nama: metadata.full_name ?? metadata.nama ?? null,
+      nama: userRow.full_name ?? metadata.full_name ?? null,
       email: authUser?.email ?? null,
       phone: metadata.phone ?? authUser?.phone ?? null,
       role: userRow?.role ?? metadata.role ?? null,
@@ -66,6 +66,7 @@ export class UsersService {
         .from('users')
         .insert({
           id: authUser.id,
+          full_name: body.nama,
           phone: body.phone,
           role: body.role,
         })
@@ -206,6 +207,7 @@ export class UsersService {
       const { data: updatedRow, error: updateRowError } = await adminClient
         .from('users')
         .update({
+          full_name: body.nama ?? existingRow.full_name,
           phone: body.phone ?? existingRow.phone,
           role: body.role ?? existingRow.role,
         })
