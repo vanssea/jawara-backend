@@ -74,34 +74,36 @@ async create(userId: string, body: CreateExpensesDto) {
   }
 
   // UPDATE
-  async update(userId: string, id: string, body: UpdateExpensesDto) {
-    try {
-      const { data, error } = await this.supabaseService
-        .getClient()
-        .from('pengeluaran')
-        .update({
-          ...body,
-          updated_by: userId,
-        })
-        .eq('id', id)
-        .select()
-        .single();
+  // UPDATE
+async update(userId: string, id: string, body: UpdateExpensesDto) {
+  try {
+    const { data, error } = await this.supabaseService
+      .getClient()
+      .from('pengeluaran')
+      .update({
+        ...body,
+        // Hapus updated_by: userId jika field ini tidak ada di tabel 'pengeluaran'
+      })
+      .eq('id', id)
+      .select()
+      .single();
 
-      if (error) throw new HttpException(error.message, 500);
+    if (error) throw new HttpException(error.message, 500);
 
-      await this.supabaseService
-        .getClient()
-        .from('pengeluaran')
-        .insert({
-          aktor_id: userId,
-          deskripsi: updateActivity('expenses', data.judul),
-        });
+    // 👇 LOGGING DIPERBAIKI
+    await this.supabaseService
+      .getClient()
+      .from('aktivitas') // ✅ Tabel log yang benar
+      .insert({
+        aktor_id: userId,
+        deskripsi: updateActivity('expenses', data.nama), // ✅ Menggunakan data.nama
+      });
 
-      return data;
-    } catch (err) {
-      throw new HttpException(err.message, 500);
-    }
+    return data;
+  } catch (err) {
+    throw new HttpException(err.message, 500);
   }
+}
 
   // DELETE
   async remove(userId: string, id: string) {
