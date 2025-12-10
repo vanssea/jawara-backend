@@ -12,12 +12,15 @@ import { TransferChannelModule } from './transfer-channel/transfer-channel.modul
 import { FamiliesModule } from './families/families.module';
 import { KegiatanKategoriModule } from './kegiatan-kategori/kegiatan-kategori.module';
 import { DashboardModule } from './dashboard/dashboard.module';
+import { UsersModule } from './user/user.module';
 import { PemasukanKategoriIuranModule } from './income/pemasukkan_kategori/pemasukkan_kategori_iuran.module';
 import { PemasukkanNonIuranModule } from './income/pemasukkan_noniuran/pemasukkan_non_iuran.module';
 import { PemasukkanTagihanModule } from './income/pemasukkan_tagihan/pemasukkan_tagihan.module';
 import { PenerimaanWargaModule } from './penerimaan-warga/penerimaan-warga.module';
 import { ReportModule } from './reports/reports.module';
 
+import { PesanAspirasiModule } from './PesanWarga/pesan_warga.module';
+import { RumahModule } from './rumah/rumah.module';
 
 @Module({
   imports: [
@@ -33,11 +36,14 @@ import { ReportModule } from './reports/reports.module';
     FamiliesModule,
     KegiatanKategoriModule,
     DashboardModule,
+    UsersModule,
     PemasukanKategoriIuranModule,
     PemasukkanNonIuranModule,
     PemasukkanTagihanModule,
     PenerimaanWargaModule,
     ReportModule,
+    PesanAspirasiModule,
+    RumahModule,
   ],
   controllers: [],
   providers: [],

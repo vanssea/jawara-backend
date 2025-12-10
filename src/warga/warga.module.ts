@@ -7,5 +7,6 @@ import { CommonModule } from 'src/common/common.module';
   imports: [CommonModule],
   controllers: [WargaController],
   providers: [WargaService],
+  exports: [WargaService],
 })
 export class WargaModule {}

@@ -63,6 +63,14 @@ export class KegiatanService {
         ),
       );
 
+      const pjIds = Array.from(
+        new Set(
+          (data || [])
+            .map((k: any) => k.penanggung_jawab)
+            .filter((id: any) => id !== null && id !== undefined),
+        ),
+      );
+
       let kategoriMap: Record<number, string> = {};
       if (kategoriIds.length > 0) {
         const { data: kategoriData, error: kategoriError } = await client
@@ -79,8 +87,22 @@ export class KegiatanService {
         );
       }
 
+      let pjMap: Record<string, string> = {};
+      if (pjIds.length > 0) {
+        const { data: wargaData, error: wargaError } = await client
+          .from('data_warga')
+          .select('id, nama')
+          .in('id', pjIds);
+        if (wargaError) throw new HttpException(wargaError.message, 500);
+        pjMap = (wargaData || []).reduce((acc: Record<string, string>, row: any) => {
+          acc[row.id] = row.nama;
+          return acc;
+        }, {});
+      }
+
       const enriched = (data || []).map((row: any) => ({
         ...row,
+        penanggung_jawab_nama: row.penanggung_jawab != null ? pjMap[row.penanggung_jawab] ?? null : null,
         kategori: row.kategori_id != null ? kategoriMap[row.kategori_id] ?? null : null,
       }));
 
@@ -104,6 +126,7 @@ export class KegiatanService {
       if (!data) return data;
 
       let kategoriName: string | null = null;
+      let penanggungJawabNama: string | null = null;
       if (data.kategori_id != null) {
         const { data: kategori, error: kategoriError } = await client
           .from('kegiatan_kategori')
@@ -114,7 +137,17 @@ export class KegiatanService {
         kategoriName = kategori?.nama ?? null;
       }
 
-      return { ...data, kategori: kategoriName };
+      if (data.penanggung_jawab != null) {
+        const { data: pj, error: pjError } = await client
+          .from('data_warga')
+          .select('nama')
+          .eq('id', data.penanggung_jawab)
+          .single();
+        if (pjError) throw new HttpException(pjError.message, 500);
+        penanggungJawabNama = pj?.nama ?? null;
+      }
+
+      return { ...data, kategori: kategoriName, penanggung_jawab_nama: penanggungJawabNama };
     } catch (error) {
       throw new HttpException(error.message, 500);
     }

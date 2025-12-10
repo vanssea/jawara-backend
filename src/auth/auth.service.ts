@@ -2,6 +2,7 @@ import { HttpException, Injectable } from '@nestjs/common';
 import { SupabaseService } from 'src/common/service/supabase.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
+import { UserRole } from 'src/user/enum/user-role.enum';
 
 @Injectable()
 export class AuthService {
@@ -29,18 +30,45 @@ export class AuthService {
   }
 
   public async register(request: RegisterDto) {
-    const { data, error } = await this.supabaseService.getClient().auth.signUp({
+    const client = this.supabaseService.getClient();
+    const adminClient = this.supabaseService.getAdminClient();
+
+    const { data, error } = await client.auth.signUp({
       email: request.email,
       password: request.password,
       options: {
         data: {
-          name: request.name,
+          full_name: request.name,
           phone: request.phone,
+          role: UserRole.WARGA,
         },
       },
     });
 
-    if (error) throw new HttpException(error.message, 500);
+    if (error) {
+      throw new HttpException(error.message, 500);
+    }
+
+    const user = data.user;
+    if (!user) {
+      throw new HttpException('Failed to create auth user', 500);
+    }
+
+    const { error: userError } = await adminClient
+      .from('users')
+      .insert({
+        id: user.id,
+        full_name: request.name,
+        phone: request.phone,
+        role: UserRole.WARGA,
+      })
+      .select('*')
+      .single();
+
+    if (userError) {
+      await adminClient.auth.admin.deleteUser(user.id);
+      throw new HttpException(userError.message, 500);
+    }
 
     return {
       message: 'success',

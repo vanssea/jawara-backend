@@ -146,7 +146,8 @@ export class DashboardService {
       // Fetch warga data
       const { data: wargaData, error: wargaError } = await client
         .from('data_warga')
-        .select('id, jenis_kelamin, tanggal_lahir, agama, pendidikan_terakhir, pekerjaan, created_at, status');
+        .select('id, jenis_kelamin, tanggal_lahir, agama, pendidikan_terakhir, pekerjaan, created_at, status, status_penerimaan')
+        .or('status_penerimaan.eq.diterima,status_penerimaan.is.null');
       if (wargaError) throw new HttpException(wargaError.message, 500);
 
       const { data: keluargaData, error: keluargaError } = await client
@@ -239,16 +240,25 @@ export class DashboardService {
 
       // Status warga distribusi (aktif/nonaktif)
       const statusWargaCount: Record<string, number> = {
-        'Aktif': 0,
-        'Nonaktif': 0,
+        Aktif: 0,
+        Nonaktif: 0,
+        'Tidak diketahui': 0,
       };
+
       (wargaData || []).forEach((w: any) => {
-        // Hanya hitung jika status tidak null
-        if (w.status !== null && w.status !== undefined) {
-          const key = w.status ? 'Aktif' : 'Nonaktif';
-          statusWargaCount[key] = (statusWargaCount[key] || 0) + 1;
+        const raw = (w.status ?? '').toString().trim().toLowerCase();
+        if (raw === 'aktif') {
+          statusWargaCount.Aktif += 1;
+        } else if (raw === 'nonaktif') {
+          statusWargaCount.Nonaktif += 1;
+        } else {
+          statusWargaCount['Tidak diketahui'] += 1;
         }
       });
+
+      if (statusWargaCount['Tidak diketahui'] === 0) {
+        delete statusWargaCount['Tidak diketahui'];
+      }
       const statusWarga = Object.entries(statusWargaCount).map(([label, jumlah]) => ({ label, jumlah }));
 
       return {

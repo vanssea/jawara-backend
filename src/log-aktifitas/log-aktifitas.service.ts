@@ -10,7 +10,12 @@ export class LogAktifitasService {
       const { data, error } = await this.supabaseService
         .getClient()
         .from('log_aktifitas')
-        .select('*');
+        .select(
+          `
+          *,
+          user:users(full_name)
+        `,
+        );
 
       if (error) throw new HttpException(error.message, 500);
 
@@ -25,7 +30,12 @@ export class LogAktifitasService {
       const { data, error } = await this.supabaseService
         .getClient()
         .from('log_aktifitas')
-        .select('*')
+        .select(
+          `
+          *,
+          user:users(full_name)
+        `,
+        )
         .eq('id', id)
         .single();
 

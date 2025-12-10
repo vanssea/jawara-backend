@@ -1,4 +1,8 @@
-import { HttpException, Injectable, InternalServerErrorException } from '@nestjs/common';
+import {
+  HttpException,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { Express } from 'express';
@@ -12,7 +16,8 @@ export class SupabaseService {
   constructor(private readonly configService: ConfigService) {
     // First: try to read from ConfigService, fallback to process.env
     const url =
-      this.configService.get<string>('SUPABASE_URL') || process.env.SUPABASE_URL;
+      this.configService.get<string>('SUPABASE_URL') ||
+      process.env.SUPABASE_URL;
     const anonKey =
       this.configService.get<string>('SUPABASE_ANON_KEY') ||
       this.configService.get<string>('SUPABASE_KEY') ||
@@ -26,15 +31,20 @@ export class SupabaseService {
 
     // Storage bucket fallback
     this.storageBucket =
-      (this.configService.get<string>('SUPABASE_STORAGE_BUCKET') ||
-        process.env.SUPABASE_STORAGE_BUCKET) || 'jawara';
+      this.configService.get<string>('SUPABASE_STORAGE_BUCKET') ||
+      process.env.SUPABASE_STORAGE_BUCKET ||
+      'jawara';
 
     // Diagnostic logs (DO NOT print full keys). Prints only presence and masked tail.
     const mask = (s?: string) =>
       !s ? null : `${s.slice(0, 4)}...${s.slice(-4)}`;
     console.log('[supabase] SUPABASE_URL set?', !!url);
     console.log('[supabase] SUPABASE_ANON_KEY set?', !!anonKey, mask(anonKey));
-    console.log('[supabase] SUPABASE_SERVICE_KEY set?', !!serviceKey, mask(serviceKey));
+    console.log(
+      '[supabase] SUPABASE_SERVICE_KEY set?',
+      !!serviceKey,
+      mask(serviceKey),
+    );
     console.log('[supabase] SUPABASE_STORAGE_BUCKET:', this.storageBucket);
 
     // Fail early with helpful message
@@ -64,7 +74,9 @@ export class SupabaseService {
     } catch (err) {
       console.error('[supabase] failed to create client:', err?.message ?? err);
       // rethrow so Nest shows meaningful error
-      throw new InternalServerErrorException('Failed to initialize Supabase client.');
+      throw new InternalServerErrorException(
+        'Failed to initialize Supabase client.',
+      );
     }
   }
 

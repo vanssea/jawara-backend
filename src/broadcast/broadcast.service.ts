@@ -25,11 +25,17 @@ export class BroadcastService {
       let link_lampiran_dokumen: string | null | undefined;
 
       if (files?.gambar?.[0]) {
-        link_lampiran_gambar = await this.supabaseService.uploadFile('broadcast/images', files.gambar[0]);
+        link_lampiran_gambar = await this.supabaseService.uploadFile(
+          'broadcast/images',
+          files.gambar[0],
+        );
       }
 
       if (files?.dokumen?.[0]) {
-        link_lampiran_dokumen = await this.supabaseService.uploadFile('broadcast/documents', files.dokumen[0]);
+        link_lampiran_dokumen = await this.supabaseService.uploadFile(
+          'broadcast/documents',
+          files.dokumen[0],
+        );
       }
 
       const { data, error } = await this.supabaseService
@@ -37,8 +43,10 @@ export class BroadcastService {
         .from('broadcast')
         .insert({
           ...body,
-          link_lampiran_gambar: link_lampiran_gambar ?? body['link_lampiran_gambar'],
-          link_lampiran_dokumen: link_lampiran_dokumen ?? body['link_lampiran_dokumen'],
+          link_lampiran_gambar:
+            link_lampiran_gambar ?? body['link_lampiran_gambar'],
+          link_lampiran_dokumen:
+            link_lampiran_dokumen ?? body['link_lampiran_dokumen'],
           created_by: userId,
         })
         .select()
@@ -66,7 +74,12 @@ export class BroadcastService {
       const { data, error } = await this.supabaseService
         .getClient()
         .from('broadcast')
-        .select('*');
+        .select(
+          `
+          *,
+          user:users(full_name)
+        `,
+        );
 
       if (error) throw new HttpException(error.message, 500);
 
@@ -81,7 +94,12 @@ export class BroadcastService {
       const { data, error } = await this.supabaseService
         .getClient()
         .from('broadcast')
-        .select('*')
+        .select(
+          `
+          *,
+          user:users(full_name)
+        `,
+        )
         .eq('id', id)
         .single();
 
@@ -110,19 +128,29 @@ export class BroadcastService {
       if (files?.gambar?.[0]) {
         // Remove old image if exists
         if (existing.link_lampiran_gambar) {
-          const oldImagePath = this.supabaseService.extractPathFromPublicUrl(existing.link_lampiran_gambar);
+          const oldImagePath = this.supabaseService.extractPathFromPublicUrl(
+            existing.link_lampiran_gambar,
+          );
           await this.supabaseService.removeFile(oldImagePath);
         }
-        link_lampiran_gambar = await this.supabaseService.uploadFile('broadcast/images', files.gambar[0]);
+        link_lampiran_gambar = await this.supabaseService.uploadFile(
+          'broadcast/images',
+          files.gambar[0],
+        );
       }
 
       if (files?.dokumen?.[0]) {
         // Remove old document if exists
         if (existing.link_lampiran_dokumen) {
-          const oldDocPath = this.supabaseService.extractPathFromPublicUrl(existing.link_lampiran_dokumen);
+          const oldDocPath = this.supabaseService.extractPathFromPublicUrl(
+            existing.link_lampiran_dokumen,
+          );
           await this.supabaseService.removeFile(oldDocPath);
         }
-        link_lampiran_dokumen = await this.supabaseService.uploadFile('broadcast/documents', files.dokumen[0]);
+        link_lampiran_dokumen = await this.supabaseService.uploadFile(
+          'broadcast/documents',
+          files.dokumen[0],
+        );
       }
 
       const { data, error } = await this.supabaseService
@@ -161,13 +189,17 @@ export class BroadcastService {
 
       // Remove image if exists
       if (data.link_lampiran_gambar) {
-        const imagePath = this.supabaseService.extractPathFromPublicUrl(data.link_lampiran_gambar);
+        const imagePath = this.supabaseService.extractPathFromPublicUrl(
+          data.link_lampiran_gambar,
+        );
         await this.supabaseService.removeFile(imagePath);
       }
 
       // Remove document if exists
       if (data.link_lampiran_dokumen) {
-        const docPath = this.supabaseService.extractPathFromPublicUrl(data.link_lampiran_dokumen);
+        const docPath = this.supabaseService.extractPathFromPublicUrl(
+          data.link_lampiran_dokumen,
+        );
         await this.supabaseService.removeFile(docPath);
       }
 
