@@ -12,49 +12,116 @@ import {
 export class ExpensesService {
   constructor(private readonly supabaseService: SupabaseService) {}
 
-  // CREATE
-  // CREATE
-async create(userId: string, body: CreateExpensesDto) {
-  try {
-    const payload = {
-      nama: body.nama,
-      kategori_id: body.kategori_id,
-      tanggal_transaksi: body.tanggal_transaksi,
-      nominal: body.nominal,
-      tanggal_terverifikasi: body.tanggal_terverifikasi ?? null,
-      verifikator: body.verifikator ?? null,
+  private mapExpense(row: any) {
+    if (!row) return row;
+    return {
+      ...row,
+      kategori_nama: row.kategori?.nama ?? null,
+      verifikator_nama: null,
     };
-
-    const { data, error } = await this.supabaseService
-      .getClient()
-      .from('pengeluaran')
-      .insert(payload)
-      .select()
-      .single();
-
-    if (error) throw new HttpException(error.message, 500);
-
-    // Insert ke tabel LOG (asumsi nama tabel: aktivitas)
-    await this.supabaseService
-      .getClient()
-      .from('aktivitas')   // ⬅ ubah sesuai nama tabel log kamu
-      .insert({
-        aktor_id: userId,
-        deskripsi: createActivity('expenses', body.nama),
-      });
-
-    return data;
-  } catch (err) {
-    throw new HttpException(err.message, 500);
   }
-}
+
+  private async attachVerifikatorNames<T extends any | any[]>(rows: T) {
+    const list = Array.isArray(rows) ? rows : [rows];
+    const verIds = Array.from(
+      new Set(
+        list
+          .map((r) => r?.verifikator)
+          .filter((v): v is string => Boolean(v)),
+      ),
+    );
+
+    const nameMap = new Map<string, string>();
+
+    if (verIds.length > 0) {
+      const admin = this.supabaseService.getAdminClient();
+      await Promise.all(
+        verIds.map(async (id) => {
+          try {
+            const { data } = await admin.auth.admin.getUserById(id);
+            const user = data?.user;
+            if (user) {
+              const meta = user.user_metadata || {};
+              const name =
+                meta.full_name || meta.name || user.email || user.phone || id;
+              nameMap.set(id, name);
+            }
+          } catch (e) {
+            // swallow; leave map empty for this id
+          }
+        }),
+      );
+    }
+
+    const mapped = list.map((row) => {
+      const base = this.mapExpense(row);
+      if (row?.verifikator && nameMap.has(row.verifikator)) {
+        base.verifikator_nama = nameMap.get(row.verifikator);
+      }
+      return base;
+    });
+
+    return Array.isArray(rows) ? (mapped as T) : (mapped[0] as T);
+  }
+
+  // CREATE
+  // CREATE
+  async create(userId: string, body: CreateExpensesDto) {
+    try {
+      const now = new Date().toISOString();
+      const shouldVerify = Boolean(
+        body.verifikator || body.tanggal_terverifikasi,
+      );
+      const payload = {
+        nama: body.nama,
+        kategori_id: body.kategori_id,
+        tanggal_transaksi: body.tanggal_transaksi,
+        nominal: body.nominal,
+        tanggal_terverifikasi: shouldVerify ? body.tanggal_terverifikasi ?? now : null,
+        verifikator: shouldVerify ? body.verifikator ?? userId : null,
+      };
+
+      const { data, error } = await this.supabaseService
+        .getClient()
+        .from('pengeluaran')
+        .insert(payload)
+        .select(`*, kategori:pengeluaran_kategori(id, nama) `)
+        .single();
+
+      if (error) throw new HttpException(error.message, 500);
+
+      await this.supabaseService
+        .getClient()
+        .from('aktivitas')
+        .insert({
+          aktor_id: userId,
+          deskripsi: createActivity('expenses', body.nama),
+        });
+
+      return this.attachVerifikatorNames(this.mapExpense(data));
+    } catch (err) {
+      throw new HttpException(err.message, 500);
+    }
+  }
 
   // READ ALL
   async findAll() {
     const { data, error } = await this.supabaseService
       .getClient()
       .from('pengeluaran')
-      .select('*');
+      .select(`*, kategori:pengeluaran_kategori(id, nama)`);
+
+    if (error) throw new HttpException(error.message, 500);
+    if (!Array.isArray(data)) return [];
+    return this.attachVerifikatorNames(data.map((row) => this.mapExpense(row)));
+  }
+
+  async findCategories() {
+    const { data, error } = await this.supabaseService
+      .getClient()
+      .from('pengeluaran_kategori')
+      .select('id, nama')
+      .order('nama', { ascending: true });
 
     if (error) throw new HttpException(error.message, 500);
     return data;
@@ -65,45 +132,63 @@ async create(userId: string, body: CreateExpensesDto) {
     const { data, error } = await this.supabaseService
       .getClient()
       .from('pengeluaran')
-      .select('*')
+      .select(`*, kategori:pengeluaran_kategori(id, nama)`)
       .eq('id', id)
       .single();
 
     if (error) throw new HttpException(error.message, 500);
-    return data;
+    return this.attachVerifikatorNames(this.mapExpense(data));
   }
 
   // UPDATE
-  // UPDATE
-async update(userId: string, id: string, body: UpdateExpensesDto) {
-  try {
-    const { data, error } = await this.supabaseService
-      .getClient()
-      .from('pengeluaran')
-      .update({
-        ...body,
-        // Hapus updated_by: userId jika field ini tidak ada di tabel 'pengeluaran'
-      })
-      .eq('id', id)
-      .select()
-      .single();
+  async update(userId: string, id: string, body: UpdateExpensesDto) {
+    try {
+      const now = new Date().toISOString();
+      const shouldVerify = Boolean(
+        body.verifikator || body.tanggal_terverifikasi,
+      );
+      const payload: Record<string, unknown> = {};
 
-    if (error) throw new HttpException(error.message, 500);
+      if (body.nama !== undefined) payload.nama = body.nama;
+      if (body.kategori_id !== undefined) payload.kategori_id = body.kategori_id;
+      if (body.tanggal_transaksi !== undefined)
+        payload.tanggal_transaksi = body.tanggal_transaksi;
+      if (body.nominal !== undefined) payload.nominal = body.nominal;
 
-    // 👇 LOGGING DIPERBAIKI
-    await this.supabaseService
-      .getClient()
-      .from('aktivitas') // ✅ Tabel log yang benar
-      .insert({
-        aktor_id: userId,
-        deskripsi: updateActivity('expenses', data.nama), // ✅ Menggunakan data.nama
-      });
+      if (body.verifikator !== undefined) {
+        payload.verifikator = body.verifikator;
+      }
 
-    return data;
-  } catch (err) {
-    throw new HttpException(err.message, 500);
+      if (shouldVerify) {
+        payload.tanggal_terverifikasi = body.tanggal_terverifikasi ?? now;
+        payload.verifikator = body.verifikator ?? userId;
+      } else if (body.tanggal_terverifikasi !== undefined) {
+        payload.tanggal_terverifikasi = body.tanggal_terverifikasi;
+      }
+
+      const { data, error } = await this.supabaseService
+        .getClient()
+        .from('pengeluaran')
+        .update(payload)
+        .eq('id', id)
+        .select(`*, kategori:pengeluaran_kategori(id, nama)`)
+        .single();
+
+      if (error) throw new HttpException(error.message, 500);
+
+      await this.supabaseService
+        .getClient()
+        .from('aktivitas')
+        .insert({
+          aktor_id: userId,
+          deskripsi: updateActivity('expenses', data.nama),
+        });
+
+      return this.attachVerifikatorNames(this.mapExpense(data));
+    } catch (err) {
+      throw new HttpException(err.message, 500);
+    }
   }
-}
 
   // DELETE
   async remove(userId: string, id: string) {

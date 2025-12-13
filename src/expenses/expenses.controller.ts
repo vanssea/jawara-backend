@@ -46,6 +46,17 @@ export class ExpensesController {
     }
   }
 
+  @ApiOperation({ summary: 'Get expense categories' })
+  @Get('categories')
+  async findCategories() {
+    try {
+      const result = await this.expensesService.findCategories();
+      return successResponse(result, 'Expense categories fetched successfully');
+    } catch (error) {
+      return errorResponse(500, error.message);
+    }
+  }
+
   @ApiOperation({ summary: 'Get expense by ID' })
   @Get(':id')
   async findOne(@Param('id') id: string) {
