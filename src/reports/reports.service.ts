@@ -49,26 +49,83 @@ export class ReportsService {
     // ------------------------------------------------------------------
 
     async findAllExpense() {
-        const { data, error } = await this.supabase
-            .getClient()
-            .from('pengeluaran')
-            .select('*')
-            .order('tanggal_transaksi', { ascending: false }); // Menggunakan tanggal_transaksi
+        const client = this.supabase.getClient();
 
-        if (error) throw new HttpException(error.message, 500);
-        return data;
+        // Ambil pengeluaran terverifikasi
+        const { data: pengeluaranData, error: pengeluaranError } = await client
+            .from('pengeluaran')
+            .select('id, nama, kategori_id, tanggal_transaksi, nominal, tanggal_terverifikasi, created_at')
+            .not('tanggal_terverifikasi', 'is', null)
+            .order('tanggal_transaksi', { ascending: false });
+        if (pengeluaranError) throw new HttpException(pengeluaranError.message, 500);
+
+        // Ambil kegiatan ber-anggaran (dianggap pengeluaran)
+        const { data: kegiatanData, error: kegiatanError } = await client
+            .from('kegiatan')
+            .select('id, anggaran, tanggal, created_at')
+            .not('anggaran', 'is', null)
+            .order('tanggal', { ascending: false });
+        if (kegiatanError) throw new HttpException(kegiatanError.message, 500);
+
+        const mappedPengeluaran = (pengeluaranData || []).map((row: any) => ({
+            ...row,
+            tipe_transaksi: 'pengeluaran',
+        }));
+
+        const mappedKegiatan = (kegiatanData || []).map((row: any) => ({
+            id: row.id,
+            nama: 'Pengeluaran Kegiatan',
+            kategori_id: null,
+            tanggal_transaksi: row.tanggal,
+            nominal: row.anggaran,
+            tanggal_terverifikasi: null,
+            created_at: row.created_at,
+            tipe_transaksi: 'pengeluaran',
+        }));
+
+        const combined = [...mappedPengeluaran, ...mappedKegiatan].sort((a, b) => {
+            const ta = a.tanggal_transaksi || a.created_at || '';
+            const tb = b.tanggal_transaksi || b.created_at || '';
+            return tb.localeCompare(ta);
+        });
+
+        return combined;
     }
 
     async findOneExpense(id: string) {
+        // Cari di pengeluaran dulu
         const { data, error } = await this.supabase
             .getClient()
             .from('pengeluaran')
-            .select('*')
+            .select('id, nama, kategori_id, tanggal_transaksi, nominal, tanggal_terverifikasi, created_at')
             .eq('id', id)
             .single();
 
-        if (error) throw new HttpException(error.message, 500);
-        return data;
+        if (!error && data) {
+            return { ...data, tipe_transaksi: 'pengeluaran' };
+        }
+
+        // Jika tidak ada, coba cari di kegiatan ber-anggaran
+        const { data: kegiatan, error: kegiatanError } = await this.supabase
+            .getClient()
+            .from('kegiatan')
+            .select('id, anggaran, tanggal, created_at')
+            .eq('id', id)
+            .not('anggaran', 'is', null)
+            .single();
+
+        if (kegiatanError || !kegiatan) throw new HttpException('Data tidak ditemukan', 404);
+
+        return {
+            id: kegiatan.id,
+            nama: 'Pengeluaran Kegiatan',
+            kategori_id: null,
+            tanggal_transaksi: kegiatan.tanggal,
+            nominal: kegiatan.anggaran,
+            tanggal_terverifikasi: null,
+            created_at: kegiatan.created_at,
+            tipe_transaksi: 'pengeluaran',
+        };
     }
 
     // ------------------------------------------------------------------
@@ -76,26 +133,128 @@ export class ReportsService {
     // ------------------------------------------------------------------
 
     async findAllIncome() {
-        const { data, error } = await this.supabase
-            .getClient()
-            .from('pemasukan_tagihan')
-            .select('*')
-            .order('created_at', { ascending: false });
+        const client = this.supabase.getClient();
 
-        if (error) throw new HttpException(error.message, 500);
-        return data;
+        const { data: kategoriData, error: kategoriError } = await client
+            .from('pemasukan_kategori_iuran')
+            .select('id, nama, nominal');
+        if (kategoriError) throw new HttpException(kategoriError.message, 500);
+
+        const kategoriMap = new Map<string, { nama: string; nominal: number }>();
+        (kategoriData || []).forEach((row: any) => {
+            kategoriMap.set(row.id, {
+                nama: row.nama || 'Tidak diketahui',
+                nominal: Number(row.nominal) || 0,
+            });
+        });
+
+        const { data: tagihanData, error: tagihanError } = await client
+            .from('pemasukan_tagihan')
+            .select('id, nama, kategori_id, created_at, status, periode')
+            .eq('status', 'Lunas')
+            .order('periode', { ascending: false });
+        if (tagihanError) throw new HttpException(tagihanError.message, 500);
+
+        const { data: nonIuranData, error: nonIuranError } = await client
+            .from('pemasukan_non_iuran')
+            .select('id, nominal, tanggal_pemasukan, kategori_pemasukan, created_at')
+            .order('tanggal_pemasukan', { ascending: false });
+        if (nonIuranError) throw new HttpException(nonIuranError.message, 500);
+
+        const mappedTagihan = (tagihanData || []).map((row: any) => {
+            const kategori = row.kategori_id ? kategoriMap.get(row.kategori_id) : undefined;
+            return {
+                id: row.id,
+                nama: row.nama || kategori?.nama || 'Tagihan Iuran',
+                kategori_id: row.kategori_id,
+                nominal: kategori?.nominal || 0,
+                periode: row.periode,
+                created_at: row.created_at,
+                status: row.status,
+                tipe_transaksi: 'pemasukan_tagihan',
+            };
+        });
+
+        const mappedNonIuran = (nonIuranData || []).map((row: any) => ({
+            id: row.id,
+            nama: row.kategori_pemasukan || 'Pemasukan Non Iuran',
+            kategori_id: null,
+            nominal: Number(row.nominal) || 0,
+            tanggal_transaksi: row.tanggal_pemasukan,
+            created_at: row.created_at,
+            status: null,
+            tipe_transaksi: 'pemasukan_non_iuran',
+        }));
+
+        const combined = [...mappedTagihan, ...mappedNonIuran]
+            .map((row: any) => ({
+                ...row,
+                tanggal_sort: (row.periode || row.tanggal_transaksi || row.created_at || '').toString(),
+            }))
+            .sort((a, b) => {
+                const da = new Date(a.tanggal_sort).getTime();
+                const db = new Date(b.tanggal_sort).getTime();
+                if (Number.isFinite(da) && Number.isFinite(db)) return db - da;
+                return b.tanggal_sort.localeCompare(a.tanggal_sort);
+            });
+
+        return combined;
     }
 
     async findOneIncome(id: string) {
-        const { data, error } = await this.supabase
-            .getClient()
+        const client = this.supabase.getClient();
+
+        const { data: kategoriData, error: kategoriError } = await client
+            .from('pemasukan_kategori_iuran')
+            .select('id, nama, nominal');
+        if (kategoriError) throw new HttpException(kategoriError.message, 500);
+
+        const kategoriMap = new Map<string, { nama: string; nominal: number }>();
+        (kategoriData || []).forEach((row: any) => {
+            kategoriMap.set(row.id, {
+                nama: row.nama || 'Tidak diketahui',
+                nominal: Number(row.nominal) || 0,
+            });
+        });
+
+        const { data, error } = await client
             .from('pemasukan_tagihan')
-            .select('*')
+            .select('id, kategori_id, created_at, status, periode')
             .eq('id', id)
             .single();
 
-        if (error) throw new HttpException(error.message, 500);
-        return data;
+        if (!error && data) {
+            const kategori = data.kategori_id ? kategoriMap.get(data.kategori_id) : undefined;
+            return {
+                id: data.id,
+                nama: kategori?.nama || 'Tagihan Iuran',
+                kategori_id: data.kategori_id,
+                nominal: kategori?.nominal || 0,
+                periode: data.periode,
+                created_at: data.created_at,
+                status: data.status,
+                tipe_transaksi: 'pemasukan_tagihan',
+            };
+        }
+
+        const { data: nonIuran, error: nonIuranError } = await client
+            .from('pemasukan_non_iuran')
+            .select('id, nominal, tanggal_pemasukan, kategori_pemasukan, created_at')
+            .eq('id', id)
+            .single();
+
+        if (nonIuranError || !nonIuran) throw new HttpException('Data tidak ditemukan', 404);
+
+        return {
+            id: nonIuran.id,
+            nama: nonIuran.kategori_pemasukan || 'Pemasukan Non Iuran',
+            kategori_id: null,
+            nominal: Number(nonIuran.nominal) || 0,
+            tanggal_transaksi: nonIuran.tanggal_pemasukan,
+            created_at: nonIuran.created_at,
+            status: null,
+            tipe_transaksi: 'pemasukan_non_iuran',
+        };
     }
 
     // ------------------------------------------------------------------
