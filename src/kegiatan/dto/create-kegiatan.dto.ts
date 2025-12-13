@@ -36,4 +36,9 @@ export class CreateKegiatanDto {
   @IsString()
   @IsOptional()
   link_dokumentasi?: string;
+
+  @ApiPropertyOptional({ example: 1500000, description: 'Anggaran kegiatan dalam rupiah' })
+  @IsNumber()
+  @IsOptional()
+  anggaran?: number;
 }

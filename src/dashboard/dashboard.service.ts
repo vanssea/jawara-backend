@@ -303,6 +303,13 @@ export class DashboardService {
         .not('tanggal_terverifikasi', 'is', null);
       if (pengeluaranError) throw new HttpException(pengeluaranError.message, 500);
 
+      // Ambil kegiatan yang memiliki anggaran (dianggap sebagai pengeluaran kegiatan)
+      const { data: kegiatanAnggaranData, error: kegiatanAnggaranError } = await client
+        .from('kegiatan')
+        .select('id, anggaran, tanggal, created_at')
+        .not('anggaran', 'is', null);
+      if (kegiatanAnggaranError) throw new HttpException(kegiatanAnggaranError.message, 500);
+
       const { data: pengeluaranKategoriData, error: pengeluaranKategoriError } = await client
         .from('pengeluaran_kategori')
         .select('id, nama');
@@ -395,7 +402,35 @@ export class DashboardService {
         }
       });
 
-      const totalTransaksi = (tagihanData?.length || 0) + (nonIuranData?.length || 0) + (pengeluaranData?.length || 0);
+      // Tambahkan pengeluaran dari kegiatan ber-anggaran
+      const kegiatanKategoriLabel = 'Kegiatan';
+      (kegiatanAnggaranData || []).forEach((row: any) => {
+        const nominal = Number(row.anggaran) || 0;
+        if (nominal <= 0) return;
+
+        totalPengeluaran += nominal;
+
+        if (!pengeluaranKategoriSummary[kegiatanKategoriLabel]) {
+          pengeluaranKategoriSummary[kegiatanKategoriLabel] = { totalNominal: 0, jumlahTransaksi: 0 };
+        }
+        pengeluaranKategoriSummary[kegiatanKategoriLabel].totalNominal += nominal;
+        pengeluaranKategoriSummary[kegiatanKategoriLabel].jumlahTransaksi += 1;
+
+        const tanggal = row.tanggal || row.created_at;
+        if (tanggal) {
+          const date = new Date(tanggal);
+          if (!Number.isNaN(date.getTime())) {
+            const monthIndex = date.getMonth();
+            pengeluaranMonthAgg[monthIndex] = (pengeluaranMonthAgg[monthIndex] || 0) + nominal;
+          }
+        }
+      });
+
+      const totalTransaksi =
+        (tagihanData?.length || 0) +
+        (nonIuranData?.length || 0) +
+        (pengeluaranData?.length || 0) +
+        (kegiatanAnggaranData?.length || 0);
       const totalPemasukan = totalPemasukanTagihan + totalPemasukanNonIuran;
       const saldoBersih = totalPemasukan - totalPengeluaran;
 

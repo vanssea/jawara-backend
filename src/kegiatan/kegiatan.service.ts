@@ -42,7 +42,9 @@ export class KegiatanService {
         });
       if (logsError) throw new HttpException(logsError.message, 500);
 
-      return data;
+      // Enrich with related names so FE doesn't need extra refresh
+      const enriched = await this.findOne(data.id);
+      return enriched ?? data;
     } catch (error) {
       throw new HttpException(error.message, 500);
     }
@@ -190,7 +192,9 @@ export class KegiatanService {
         });
       if (logsError) throw new HttpException(logsError.message, 500);
 
-      return data;
+      // Enrich with related names so FE doesn't need extra refresh
+      const enriched = await this.findOne(data.id);
+      return enriched ?? data;
     } catch (error) {
       throw new HttpException(error.message, 500);
     }
