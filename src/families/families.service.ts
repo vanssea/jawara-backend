@@ -25,6 +25,15 @@ export class FamiliesService {
     return this.supabaseService.getClient();
   }
 
+  private async setRumahStatusDitempati(rumahId: string) {
+    const resp = await this.client
+      .from('data_rumah')
+      .update({ status: 'Ditempati' })
+      .eq('id', rumahId);
+
+    if (resp.error) throw resp.error;
+  }
+
   async create(userId: string, body: CreateFamilyDto) {
     try {
       const resp = await this.client
@@ -36,6 +45,7 @@ export class FamiliesService {
 
       const data = normalizeSingleResult(resp);
       if (Array.isArray(data)) return data[0];
+      if (body.rumah_id) await this.setRumahStatusDitempati(body.rumah_id);
       return data;
     } catch (err) {
       const msg = err?.message ?? JSON.stringify(err);
@@ -129,6 +139,7 @@ export class FamiliesService {
 
       const data = normalizeSingleResult(resp);
       if (Array.isArray(data)) return data[0];
+      if (body.rumah_id) await this.setRumahStatusDitempati(body.rumah_id);
       return data;
     } catch (err) {
       const msg = err?.message ?? JSON.stringify(err);
