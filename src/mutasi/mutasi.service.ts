@@ -25,12 +25,21 @@ export class MutasiService {
         .from(this.tableName)
         .insert({
           ...body,
-          created_by: userId,
         })
         .select('*')
         .single();
 
       if (error) throw new HttpException(error.message, 500);
+
+      // Update status keluarga menjadi Non Aktif
+      const { error: updateError } = await this.client
+        .from('data_keluarga')
+        .update({ status_keluarga: 'Non Aktif' })
+        .eq('id', body.keluarga_id);
+
+      if (updateError) {
+        console.error('Failed to update family status:', updateError.message);
+      }
 
       // optional: insert activity log (same pattern as broadcast)
       const { error: logsError } = await this.client
@@ -51,7 +60,7 @@ export class MutasiService {
     try {
       const { data, error } = await this.client
         .from(this.tableName)
-        .select('*, mutasi_jenis(id, nama)')
+        .select('*, mutasi_jenis(id, nama), data_keluarga:keluarga_id(id, nama)')
         .order('created_at', { ascending: false });
 
       if (error) throw new HttpException(error.message, 500);
@@ -67,7 +76,7 @@ export class MutasiService {
     try {
       const { data, error } = await this.client
         .from(this.tableName)
-        .select('*, mutasi_jenis(id, nama)')
+        .select('*, mutasi_jenis(id, nama), data_keluarga:keluarga_id(id, nama)')
         .eq('id', id)
         .single();
 
