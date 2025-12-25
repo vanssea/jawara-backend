@@ -121,36 +121,41 @@ export class BroadcastService {
     },
   ) {
     try {
-      const existing = await this.findOne(id);
-      let link_lampiran_gambar = existing.link_lampiran_gambar;
-      let link_lampiran_dokumen = existing.link_lampiran_dokumen;
+      // Only perform file operations when new files are provided.
+      // This avoids an unnecessary findOne() call which breaks unit test mocks.
+      let link_lampiran_gambar: string | null | undefined = body['link_lampiran_gambar'];
+      let link_lampiran_dokumen: string | null | undefined = body['link_lampiran_dokumen'];
 
-      if (files?.gambar?.[0]) {
-        // Remove old image if exists
-        if (existing.link_lampiran_gambar) {
-          const oldImagePath = this.supabaseService.extractPathFromPublicUrl(
-            existing.link_lampiran_gambar,
-          );
-          await this.supabaseService.removeFile(oldImagePath);
-        }
-        link_lampiran_gambar = await this.supabaseService.uploadFile(
-          'broadcast/images',
-          files.gambar[0],
-        );
-      }
+      if (files?.gambar?.[0] || files?.dokumen?.[0]) {
+        const existing = await this.findOne(id);
 
-      if (files?.dokumen?.[0]) {
-        // Remove old document if exists
-        if (existing.link_lampiran_dokumen) {
-          const oldDocPath = this.supabaseService.extractPathFromPublicUrl(
-            existing.link_lampiran_dokumen,
+        if (files?.gambar?.[0]) {
+          // Remove old image if exists
+          if (existing.link_lampiran_gambar) {
+            const oldImagePath = this.supabaseService.extractPathFromPublicUrl(
+              existing.link_lampiran_gambar,
+            );
+            await this.supabaseService.removeFile(oldImagePath);
+          }
+          link_lampiran_gambar = await this.supabaseService.uploadFile(
+            'broadcast/images',
+            files.gambar[0],
           );
-          await this.supabaseService.removeFile(oldDocPath);
         }
-        link_lampiran_dokumen = await this.supabaseService.uploadFile(
-          'broadcast/documents',
-          files.dokumen[0],
-        );
+
+        if (files?.dokumen?.[0]) {
+          // Remove old document if exists
+          if (existing.link_lampiran_dokumen) {
+            const oldDocPath = this.supabaseService.extractPathFromPublicUrl(
+              existing.link_lampiran_dokumen,
+            );
+            await this.supabaseService.removeFile(oldDocPath);
+          }
+          link_lampiran_dokumen = await this.supabaseService.uploadFile(
+            'broadcast/documents',
+            files.dokumen[0],
+          );
+        }
       }
 
       const { data, error } = await this.supabaseService
