@@ -1,0 +1,278 @@
+<html><head><meta charset="utf-8"/><title>Jawara Backend Test Report</title><style type="text/css">:root {
+  --text-primary: #eee;
+  --text-secondary: #aaa;
+  --success: #2ecc71;
+  --success-bright: #1e3d2a;
+  --danger: #e74c3c;
+  --danger-bright: #3d1e1e;
+  --warning: #f39c12;
+  --warning-bright: #3d2c1e;
+  --panel: #1f1f1f;
+  --border: #444;
+  --disabled: #666;
+  background-color: #121212;
+}
+
+html,
+body {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 16px;
+  margin: 0;
+  padding: 0;
+  color: var(--text-primary);
+}
+body {
+  padding: 2rem 1rem;
+}
+.jesthtml-content {
+  margin: 0 auto;
+  max-width: 70rem;
+}
+header {
+  display: flex;
+  align-items: center;
+}
+#title {
+  margin: 0;
+  flex-grow: 1;
+}
+#logo {
+  height: 4rem;
+}
+#timestamp {
+  color: var(--text-secondary);
+  margin-top: 0.5rem;
+}
+
+#metadata-container {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.additional-information-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  color: var(--text-secondary);
+}
+
+/** SUMMARY */
+#summary {
+  color: var(--text-primary);
+  display: flex;
+  font-family: monospace;
+  font-size: 1rem;
+}
+#summary > div {
+  margin-right: 0.5rem;
+  background: var(--panel);
+  padding: 1rem;
+  min-width: 15rem;
+}
+#summary > div:last-child {
+  margin-right: 0;
+}
+@media only screen and (max-width: 720px) {
+  #summary {
+    flex-direction: column;
+  }
+  #summary > div {
+    margin-right: 0;
+    margin-top: 1rem;
+  }
+  #summary > div:first-child {
+    margin-top: 0;
+  }
+}
+
+.summary-total {
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+}
+.summary-passed {
+  color: var(--success);
+  border-left: 0.4rem solid var(--success);
+  padding-left: 0.5rem;
+  margin-bottom: 0.15rem;
+}
+.summary-failed,
+.summary-obsolete-snapshots {
+  color: var(--danger);
+  border-left: 0.4rem solid var(--danger);
+  padding-left: 0.5rem;
+  margin-bottom: 0.15rem;
+}
+.summary-pending {
+  color: var(--warning);
+  border-left: 0.4rem solid var(--warning);
+  padding-left: 0.5rem;
+  margin-bottom: 0.15rem;
+}
+.summary-empty {
+  color: var(--disabled);
+  border-left: 0.4rem solid var(--disabled);
+  margin-bottom: 0.15rem;
+}
+
+.test-result {
+  padding: 1rem;
+  margin-bottom: 0.25rem;
+}
+.test-result:last-child {
+  border: 0;
+}
+.test-result.passed {
+  background-color: var(--success-bright);
+  color: var(--success);
+}
+.test-result.failed {
+  background-color: var(--danger-bright);
+  color: var(--danger);
+}
+.test-result.pending {
+  background-color: var(--warning-bright);
+  color: var(--warning);
+}
+
+.test-info {
+  display: flex;
+  justify-content: space-between;
+}
+.test-suitename {
+  width: 20%;
+  text-align: left;
+  font-weight: bold;
+  word-break: break-word;
+}
+.test-title {
+  width: 40%;
+  text-align: left;
+  font-style: italic;
+}
+.test-status {
+  width: 20%;
+  text-align: right;
+}
+.test-duration {
+  width: 10%;
+  text-align: right;
+  font-size: 0.85rem;
+}
+
+.failureMessages {
+  padding: 0 1rem;
+  margin-top: 1rem;
+  border-top: 1px dashed var(--danger);
+}
+.failureMessages.suiteFailure {
+  border-top: none;
+}
+.failureMsg {
+  white-space: pre-wrap;
+  white-space: -moz-pre-wrap;
+  white-space: -pre-wrap;
+  white-space: -o-pre-wrap;
+  word-wrap: break-word;
+}
+
+.suite-container {
+  margin-bottom: 1rem;
+}
+.suite-info {
+  padding: 1rem;
+  background-color: var(--panel);
+  color: var(--text-secondary);
+  border: 0.15rem solid;
+  border-color: var(--panel);
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.25rem;
+}
+.suite-info:hover {
+  border-color: var(--border);
+  cursor: pointer;
+}
+.suite-info .suite-path {
+  word-break: break-all;
+  flex-grow: 1;
+  font-family: monospace;
+  font-size: 1rem;
+}
+.suite-info .suite-time {
+  margin-left: 1rem;
+  padding: 0.2rem 0.3rem;
+  font-size: 0.85rem;
+}
+.suite-info .suite-time.warn {
+  background-color: var(--danger);
+  color: #fff;
+}
+.suite-info:before {
+  content: "\2303";
+  display: inline-block;
+  margin-right: 1rem;
+  transform: rotate(180deg) translateY(0.15rem);
+}
+.suite-container[open] .suite-info:before {
+  transform: rotate(0deg) translateY(0.15rem);
+}
+
+/* CONSOLE LOGS */
+.suite-consolelog {
+  margin-bottom: 0.25rem;
+  padding: 1rem;
+  background-color: var(--panel);
+}
+.suite-consolelog-header {
+  font-weight: bold;
+}
+.suite-consolelog-item {
+  padding: 0.5rem;
+}
+.suite-consolelog-item pre {
+  margin: 0.5rem 0;
+  white-space: pre-wrap;
+  white-space: -moz-pre-wrap;
+  white-space: -pre-wrap;
+  white-space: -o-pre-wrap;
+  word-wrap: break-word;
+}
+.suite-consolelog-item-origin {
+  color: var(--text-secondary);
+  font-weight: bold;
+}
+.suite-consolelog-item-message {
+  color: var(--text-primary);
+  font-size: 1rem;
+  padding: 0 0.5rem;
+}
+
+/* OBSOLETE SNAPSHOTS */
+.suite-obsolete-snapshots {
+  margin-bottom: 0.25rem;
+  padding: 1rem;
+  background-color: var(--danger-bright);
+  color: var(--danger);
+}
+.suite-obsolete-snapshots-header {
+  font-weight: bold;
+}
+.suite-obsolete-snapshots-item {
+  padding: 0.5rem;
+}
+.suite-obsolete-snapshots-item pre {
+  margin: 0.5rem 0;
+  white-space: pre-wrap;
+  white-space: -moz-pre-wrap;
+  white-space: -pre-wrap;
+  white-space: -o-pre-wrap;
+  word-wrap: break-word;
+}
+.suite-obsolete-snapshots-item-message {
+  color: var(--text-primary);
+  font-size: 1rem;
+  padding: 0 0.5rem;
+}
+</style></head><body><main class="jesthtml-content"><header><h1 id="title">Jawara Backend Test Report</h1></header><section id="metadata-container"><div id="timestamp">Started: 2025-12-26 19:24:04</div><div id="summary"><div id="suite-summary"><div class="summary-total">Suites (13)</div><div class="summary-passed ">13 passed</div><div class="summary-failed  summary-empty">0 failed</div><div class="summary-pending  summary-empty">0 pending</div></div><div id="test-summary"><div class="summary-total">Tests (124)</div><div class="summary-passed ">124 passed</div><div class="summary-failed  summary-empty">0 failed</div><div class="summary-pending  summary-empty">0 pending</div></div></div></section><details id="suite-1" class="suite-container" open=""><summary class="suite-info"><div class="suite-path">C:\d\1kuliahsem5\Pemrograman Mobile\jawara\jawara-backend\src\kegiatan-kategori\kegiatan-kategori.service.spec.ts</div><div class="suite-time warn">35.146s</div></summary><div class="suite-tests"><div class="test-result passed"><div class="test-info"><div class="test-suitename">KegiatanKategoriService</div><div class="test-title">returns ordered kategori list</div><div class="test-status">passed</div><div class="test-duration">0.227s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">KegiatanKategoriService</div><div class="test-title">throws HttpException on error</div><div class="test-status">passed</div><div class="test-duration">0.458s</div></div></div></div></details><details id="suite-2" class="suite-container" open=""><summary class="suite-info"><div class="suite-path">C:\d\1kuliahsem5\Pemrograman Mobile\jawara\jawara-backend\src\log-aktifitas\log-aktifitas.service.spec.ts</div><div class="suite-time warn">35.382s</div></summary><div class="suite-tests"><div class="test-result passed"><div class="test-info"><div class="test-suitename">LogAktifitasService &gt; findAll</div><div class="test-title">should return list of broadcasts</div><div class="test-status">passed</div><div class="test-duration">0.188s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">LogAktifitasService &gt; findAll</div><div class="test-title">should throw HttpException when select returns error</div><div class="test-status">passed</div><div class="test-duration">0.715s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">LogAktifitasService &gt; findOne</div><div class="test-title">should return a single broadcast</div><div class="test-status">passed</div><div class="test-duration">0.038s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">LogAktifitasService &gt; findOne</div><div class="test-title">should throw HttpException if not found or error</div><div class="test-status">passed</div><div class="test-duration">0.046s</div></div></div></div></details><details id="suite-3" class="suite-container" open=""><summary class="suite-info"><div class="suite-path">C:\d\1kuliahsem5\Pemrograman Mobile\jawara\jawara-backend\src\auth\auth.service.spec.ts</div><div class="suite-time warn">35.441s</div></summary><div class="suite-tests"><div class="test-result passed"><div class="test-info"><div class="test-suitename">AuthService &gt; login</div><div class="test-title">should return token info when signInWithPassword succeeds</div><div class="test-status">passed</div><div class="test-duration">0.172s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">AuthService &gt; login</div><div class="test-title">should throw HttpException when signInWithPassword returns error</div><div class="test-status">passed</div><div class="test-duration">0.666s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">AuthService &gt; register</div><div class="test-title">should return token info when signUp succeeds with session</div><div class="test-status">passed</div><div class="test-duration">0.029s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">AuthService &gt; register</div><div class="test-title">should return success even if session is undefined (no session returned)</div><div class="test-status">passed</div><div class="test-duration">0.065s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">AuthService &gt; register</div><div class="test-title">should throw HttpException when signUp returns error</div><div class="test-status">passed</div><div class="test-duration">0.079s</div></div></div></div></details><details id="suite-4" class="suite-container" open=""><summary class="suite-info"><div class="suite-path">C:\d\1kuliahsem5\Pemrograman Mobile\jawara\jawara-backend\src\dashboard\dashboard.service.spec.ts</div><div class="suite-time warn">36.291s</div></summary><div class="suite-tests"><div class="test-result passed"><div class="test-info"><div class="test-suitename">DashboardService &gt; getEventDashboard</div><div class="test-title">returns aggregated event dashboard data</div><div class="test-status">passed</div><div class="test-duration">0.322s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">DashboardService &gt; getEventDashboard</div><div class="test-title">throws HttpException when supabase returns error</div><div class="test-status">passed</div><div class="test-duration">1.23s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">DashboardService &gt; getPopulationDashboard</div><div class="test-title">aggregates population data</div><div class="test-status">passed</div><div class="test-duration">0.202s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">DashboardService &gt; getPopulationDashboard</div><div class="test-title">throws HttpException when warga query errors</div><div class="test-status">passed</div><div class="test-duration">0.043s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">DashboardService &gt; getFinanceDashboard</div><div class="test-title">computes finance summary</div><div class="test-status">passed</div><div class="test-duration">0.073s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">DashboardService &gt; getFinanceDashboard</div><div class="test-title">throws HttpException when finance query fails</div><div class="test-status">passed</div><div class="test-duration">0.02s</div></div></div></div></details><details id="suite-5" class="suite-container" open=""><summary class="suite-info"><div class="suite-path">C:\d\1kuliahsem5\Pemrograman Mobile\jawara\jawara-backend\src\warga\warga.service.spec.ts</div><div class="suite-time warn">35.921s</div></summary><div class="suite-tests"><div class="test-result passed"><div class="test-info"><div class="test-suitename">WargaService &gt; create</div><div class="test-title">inserts warga and returns created row</div><div class="test-status">passed</div><div class="test-duration">0.203s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">WargaService &gt; create</div><div class="test-title">throws on insert error</div><div class="test-status">passed</div><div class="test-duration">0.35s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">WargaService &gt; findAll</div><div class="test-title">returns ordered warga list</div><div class="test-status">passed</div><div class="test-duration">0.102s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">WargaService &gt; findAll</div><div class="test-title">throws when query fails</div><div class="test-status">passed</div><div class="test-duration">0.175s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">WargaService &gt; findOne</div><div class="test-title">returns single warga</div><div class="test-status">passed</div><div class="test-duration">0.082s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">WargaService &gt; findOne</div><div class="test-title">throws NotFound when row missing</div><div class="test-status">passed</div><div class="test-duration">0.068s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">WargaService &gt; update</div><div class="test-title">updates warga and returns row</div><div class="test-status">passed</div><div class="test-duration">0.12s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">WargaService &gt; update</div><div class="test-title">throws NotFound when update returns missing row</div><div class="test-status">passed</div><div class="test-duration">0.084s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">WargaService &gt; remove</div><div class="test-title">deletes warga</div><div class="test-status">passed</div><div class="test-duration">0.127s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">WargaService &gt; remove</div><div class="test-title">throws NotFound when delete returns no row</div><div class="test-status">passed</div><div class="test-duration">0.183s</div></div></div></div></details><details id="suite-6" class="suite-container" open=""><summary class="suite-info"><div class="suite-path">C:\d\1kuliahsem5\Pemrograman Mobile\jawara\jawara-backend\src\income\pemasukkan_noniuran\pemasukkan_non_iuran.service.spec.ts</div><div class="suite-time warn">36.339s</div></summary><div class="suite-tests"><div class="test-result passed"><div class="test-info"><div class="test-suitename">PemasukkanNonIuranService &gt; create</div><div class="test-title">should create data, upload file, log activity, and return data</div><div class="test-status">passed</div><div class="test-duration">0.416s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">PemasukkanNonIuranService &gt; create</div><div class="test-title">should throw HttpException when insert fails</div><div class="test-status">passed</div><div class="test-duration">0.934s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">PemasukkanNonIuranService &gt; findAll</div><div class="test-title">should return list of data</div><div class="test-status">passed</div><div class="test-duration">0.16s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">PemasukkanNonIuranService &gt; findAll</div><div class="test-title">should throw HttpException on select error</div><div class="test-status">passed</div><div class="test-duration">0.112s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">PemasukkanNonIuranService &gt; findOne</div><div class="test-title">should return single data</div><div class="test-status">passed</div><div class="test-duration">0.063s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">PemasukkanNonIuranService &gt; findOne</div><div class="test-title">should throw HttpException when data not found</div><div class="test-status">passed</div><div class="test-duration">0.041s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">PemasukkanNonIuranService &gt; update</div><div class="test-title">should update data, replace file, and log activity</div><div class="test-status">passed</div><div class="test-duration">0.041s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">PemasukkanNonIuranService &gt; remove</div><div class="test-title">should delete data, remove file, and log activity</div><div class="test-status">passed</div><div class="test-duration">0.029s</div></div></div></div></details><details id="suite-7" class="suite-container" open=""><summary class="suite-info"><div class="suite-path">C:\d\1kuliahsem5\Pemrograman Mobile\jawara\jawara-backend\src\income\pemasukkan_tagihan\pemasukkan_tagihan.service.spec.ts</div><div class="suite-time warn">36.302s</div></summary><div class="suite-tests"><div class="test-result passed"><div class="test-info"><div class="test-suitename">PemasukkanTagihanService &gt; create</div><div class="test-title">should create data and log activity</div><div class="test-status">passed</div><div class="test-duration">0.273s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">PemasukkanTagihanService &gt; create</div><div class="test-title">should throw HttpException when insert fails</div><div class="test-status">passed</div><div class="test-duration">0.632s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">PemasukkanTagihanService &gt; findAll</div><div class="test-title">should return list of data</div><div class="test-status">passed</div><div class="test-duration">0.036s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">PemasukkanTagihanService &gt; findAll</div><div class="test-title">should throw HttpException on select error</div><div class="test-status">passed</div><div class="test-duration">0.063s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">PemasukkanTagihanService &gt; findOne</div><div class="test-title">should return single data</div><div class="test-status">passed</div><div class="test-duration">0.155s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">PemasukkanTagihanService &gt; findOne</div><div class="test-title">should throw HttpException when not found</div><div class="test-status">passed</div><div class="test-duration">0.062s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">PemasukkanTagihanService &gt; update</div><div class="test-title">should update data and log activity</div><div class="test-status">passed</div><div class="test-duration">0.087s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">PemasukkanTagihanService &gt; update</div><div class="test-title">should throw HttpException when update fails</div><div class="test-status">passed</div><div class="test-duration">0.09s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">PemasukkanTagihanService &gt; remove</div><div class="test-title">should delete data and log activity</div><div class="test-status">passed</div><div class="test-duration">0.109s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">PemasukkanTagihanService &gt; remove</div><div class="test-title">should throw HttpException when delete fails</div><div class="test-status">passed</div><div class="test-duration">0.134s</div></div></div></div></details><details id="suite-8" class="suite-container" open=""><summary class="suite-info"><div class="suite-path">C:\d\1kuliahsem5\Pemrograman Mobile\jawara\jawara-backend\src\income\pemasukkan_kategori\pemasukkan_kategori_iuran.service.spec.ts</div><div class="suite-time warn">36.34s</div></summary><div class="suite-tests"><div class="test-result passed"><div class="test-info"><div class="test-suitename">PemasukanKategoriIuranService &gt; create</div><div class="test-title">should create kategori iuran and insert log</div><div class="test-status">passed</div><div class="test-duration">0.334s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">PemasukanKategoriIuranService &gt; create</div><div class="test-title">should throw HttpException when insert fails</div><div class="test-status">passed</div><div class="test-duration">0.603s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">PemasukanKategoriIuranService &gt; create</div><div class="test-title">should throw HttpException when log insert fails</div><div class="test-status">passed</div><div class="test-duration">0.086s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">PemasukanKategoriIuranService &gt; findAll</div><div class="test-title">should return list ordered by created_at desc</div><div class="test-status">passed</div><div class="test-duration">0.09s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">PemasukanKategoriIuranService &gt; findAll</div><div class="test-title">should throw HttpException when select fails</div><div class="test-status">passed</div><div class="test-duration">0.145s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">PemasukanKategoriIuranService &gt; findOne</div><div class="test-title">should return one kategori iuran</div><div class="test-status">passed</div><div class="test-duration">0.083s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">PemasukanKategoriIuranService &gt; findOne</div><div class="test-title">should throw HttpException when not found</div><div class="test-status">passed</div><div class="test-duration">0.139s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">PemasukanKategoriIuranService &gt; update</div><div class="test-title">should update kategori iuran and insert log</div><div class="test-status">passed</div><div class="test-duration">0.11s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">PemasukanKategoriIuranService &gt; update</div><div class="test-title">should throw HttpException when update fails</div><div class="test-status">passed</div><div class="test-duration">0.075s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">PemasukanKategoriIuranService &gt; remove</div><div class="test-title">should delete kategori iuran and insert log</div><div class="test-status">passed</div><div class="test-duration">0.155s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">PemasukanKategoriIuranService &gt; remove</div><div class="test-title">should throw HttpException when delete fails</div><div class="test-status">passed</div><div class="test-duration">0.019s</div></div></div></div></details><details id="suite-9" class="suite-container" open=""><summary class="suite-info"><div class="suite-path">C:\d\1kuliahsem5\Pemrograman Mobile\jawara\jawara-backend\src\PesanWarga\pesan_warga.service.spec.ts</div><div class="suite-time warn">36.48s</div></summary><div class="suite-tests"><div class="test-result passed"><div class="test-info"><div class="test-suitename">PesanAspirasiService &gt; create</div><div class="test-title">should create pesan aspirasi and log activity</div><div class="test-status">passed</div><div class="test-duration">0.45s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">PesanAspirasiService &gt; create</div><div class="test-title">should throw HttpException when insert fails</div><div class="test-status">passed</div><div class="test-duration">1.229s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">PesanAspirasiService &gt; create</div><div class="test-title">should throw HttpException when log insert fails</div><div class="test-status">passed</div><div class="test-duration">0.056s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">PesanAspirasiService &gt; findAll</div><div class="test-title">should return list ordered by created_at desc</div><div class="test-status">passed</div><div class="test-duration">0.038s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">PesanAspirasiService &gt; findAll</div><div class="test-title">should throw HttpException when select fails</div><div class="test-status">passed</div><div class="test-duration">0.038s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">PesanAspirasiService &gt; findOne</div><div class="test-title">should return single pesan aspirasi</div><div class="test-status">passed</div><div class="test-duration">0.012s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">PesanAspirasiService &gt; findOne</div><div class="test-title">should throw HttpException when not found</div><div class="test-status">passed</div><div class="test-duration">0.017s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">PesanAspirasiService &gt; update</div><div class="test-title">should update data and insert log</div><div class="test-status">passed</div><div class="test-duration">0.017s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">PesanAspirasiService &gt; update</div><div class="test-title">should throw HttpException when update fails</div><div class="test-status">passed</div><div class="test-duration">0.022s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">PesanAspirasiService &gt; remove</div><div class="test-title">should delete data and insert log</div><div class="test-status">passed</div><div class="test-duration">0.035s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">PesanAspirasiService &gt; remove</div><div class="test-title">should throw HttpException when delete fails</div><div class="test-status">passed</div><div class="test-duration">0.037s</div></div></div></div></details><details id="suite-10" class="suite-container" open=""><summary class="suite-info"><div class="suite-path">C:\d\1kuliahsem5\Pemrograman Mobile\jawara\jawara-backend\src\transfer-channel\transfer-channel.service.spec.ts</div><div class="suite-time warn">36.269s</div></summary><div class="suite-tests"><div class="test-result passed"><div class="test-info"><div class="test-suitename">TransferChannelService &gt; create</div><div class="test-title">should upload files, insert channel and log activity</div><div class="test-status">passed</div><div class="test-duration">0.234s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">TransferChannelService &gt; create</div><div class="test-title">should throw HttpException when insert returns error</div><div class="test-status">passed</div><div class="test-duration">0.586s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">TransferChannelService &gt; findAll</div><div class="test-title">should return all channels</div><div class="test-status">passed</div><div class="test-duration">0.053s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">TransferChannelService &gt; findAll</div><div class="test-title">should throw HttpException on error</div><div class="test-status">passed</div><div class="test-duration">0.01s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">TransferChannelService &gt; findOne</div><div class="test-title">should return a channel</div><div class="test-status">passed</div><div class="test-duration">0.081s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">TransferChannelService &gt; findOne</div><div class="test-title">should throw HttpException on error</div><div class="test-status">passed</div><div class="test-duration">0.041s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">TransferChannelService &gt; update</div><div class="test-title">should delete old files if new are uploaded and update record</div><div class="test-status">passed</div><div class="test-duration">0.275s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">TransferChannelService &gt; update</div><div class="test-title">should update without removing files if none uploaded</div><div class="test-status">passed</div><div class="test-duration">0.154s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">TransferChannelService &gt; update</div><div class="test-title">should throw HttpException on update error</div><div class="test-status">passed</div><div class="test-duration">0.102s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">TransferChannelService &gt; remove</div><div class="test-title">should delete files, delete row, insert log</div><div class="test-status">passed</div><div class="test-duration">0.11s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">TransferChannelService &gt; remove</div><div class="test-title">should throw HttpException on delete error</div><div class="test-status">passed</div><div class="test-duration">0.04s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">TransferChannelService &gt; remove</div><div class="test-title">should throw HttpException when findOne fails</div><div class="test-status">passed</div><div class="test-duration">0.029s</div></div></div></div></details><details id="suite-11" class="suite-container" open=""><summary class="suite-info"><div class="suite-path">C:\d\1kuliahsem5\Pemrograman Mobile\jawara\jawara-backend\src\kegiatan\kegiatan.service.spec.ts</div><div class="suite-time warn">36.56s</div></summary><div class="suite-tests"><div class="test-result passed"><div class="test-info"><div class="test-suitename">KegiatanService &gt; create</div><div class="test-title">should insert kegiatan and log activity then return data</div><div class="test-status">passed</div><div class="test-duration">0.296s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">KegiatanService &gt; create</div><div class="test-title">should throw HttpException when kegiatan insert returns error</div><div class="test-status">passed</div><div class="test-duration">0.95s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">KegiatanService &gt; create</div><div class="test-title">should throw HttpException when log insertion fails</div><div class="test-status">passed</div><div class="test-duration">0.108s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">KegiatanService &gt; findAll</div><div class="test-title">should return list of kegiatan</div><div class="test-status">passed</div><div class="test-duration">0.102s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">KegiatanService &gt; findAll</div><div class="test-title">should throw HttpException when select returns error</div><div class="test-status">passed</div><div class="test-duration">0.129s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">KegiatanService &gt; findOne</div><div class="test-title">should return a single kegiatan</div><div class="test-status">passed</div><div class="test-duration">0.098s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">KegiatanService &gt; findOne</div><div class="test-title">should throw HttpException if not found or error</div><div class="test-status">passed</div><div class="test-duration">0.058s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">KegiatanService &gt; update</div><div class="test-title">should update kegiatan and insert log then return updated data</div><div class="test-status">passed</div><div class="test-duration">0.049s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">KegiatanService &gt; update</div><div class="test-title">should throw HttpException when update returns error</div><div class="test-status">passed</div><div class="test-duration">0.038s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">KegiatanService &gt; update</div><div class="test-title">should throw HttpException when log insert fails after update</div><div class="test-status">passed</div><div class="test-duration">0.021s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">KegiatanService &gt; remove</div><div class="test-title">should delete kegiatan and insert log</div><div class="test-status">passed</div><div class="test-duration">0.036s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">KegiatanService &gt; remove</div><div class="test-title">should throw HttpException when delete returns error</div><div class="test-status">passed</div><div class="test-duration">0.023s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">KegiatanService &gt; remove</div><div class="test-title">should throw HttpException when findOne fails</div><div class="test-status">passed</div><div class="test-duration">0.054s</div></div></div></div></details><details id="suite-12" class="suite-container" open=""><summary class="suite-info"><div class="suite-path">C:\d\1kuliahsem5\Pemrograman Mobile\jawara\jawara-backend\src\broadcast\broadcast.service.spec.ts</div><div class="suite-time warn">36.532s</div></summary><div class="suite-tests"><div class="test-result passed"><div class="test-info"><div class="test-suitename">BroadcastService &gt; create</div><div class="test-title">should insert broadcast and log activity then return data</div><div class="test-status">passed</div><div class="test-duration">0.478s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">BroadcastService &gt; create</div><div class="test-title">should throw HttpException when broadcast insert returns error</div><div class="test-status">passed</div><div class="test-duration">1.212s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">BroadcastService &gt; create</div><div class="test-title">should throw HttpException when log insertion fails</div><div class="test-status">passed</div><div class="test-duration">0.076s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">BroadcastService &gt; findAll</div><div class="test-title">should return list of broadcasts</div><div class="test-status">passed</div><div class="test-duration">0.026s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">BroadcastService &gt; findAll</div><div class="test-title">should throw HttpException when select returns error</div><div class="test-status">passed</div><div class="test-duration">0.025s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">BroadcastService &gt; findOne</div><div class="test-title">should return a single broadcast</div><div class="test-status">passed</div><div class="test-duration">0.024s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">BroadcastService &gt; findOne</div><div class="test-title">should throw HttpException if not found or error</div><div class="test-status">passed</div><div class="test-duration">0.032s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">BroadcastService &gt; update</div><div class="test-title">should update broadcast and insert log then return updated data</div><div class="test-status">passed</div><div class="test-duration">0.02s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">BroadcastService &gt; update</div><div class="test-title">should throw HttpException when update returns error</div><div class="test-status">passed</div><div class="test-duration">0.021s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">BroadcastService &gt; update</div><div class="test-title">should throw HttpException when log insert fails after update</div><div class="test-status">passed</div><div class="test-duration">0.047s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">BroadcastService &gt; remove</div><div class="test-title">should delete broadcast and insert log</div><div class="test-status">passed</div><div class="test-duration">0.02s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">BroadcastService &gt; remove</div><div class="test-title">should throw HttpException when delete returns error</div><div class="test-status">passed</div><div class="test-duration">0.008s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">BroadcastService &gt; remove</div><div class="test-title">should throw HttpException when findOne fails</div><div class="test-status">passed</div><div class="test-duration">0.034s</div></div></div></div></details><details id="suite-13" class="suite-container" open=""><summary class="suite-info"><div class="suite-path">C:\d\1kuliahsem5\Pemrograman Mobile\jawara\jawara-backend\src\user\user.service.spec.ts</div><div class="suite-time warn">36.971s</div></summary><div class="suite-tests"><div class="test-result passed"><div class="test-info"><div class="test-suitename">UsersService &gt; create</div><div class="test-title">should throw HttpException when password and confirm_password mismatch</div><div class="test-status">passed</div><div class="test-duration">1.574s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">UsersService &gt; create</div><div class="test-title">should create auth user, insert row, create warga if role WARGA, log and return mapped user</div><div class="test-status">passed</div><div class="test-duration">0.18s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">UsersService &gt; create</div><div class="test-title">should throw HttpException when auth createUser returns error</div><div class="test-status">passed</div><div class="test-duration">0.023s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">UsersService &gt; create</div><div class="test-title">should delete auth user and throw HttpException when insert into users fails</div><div class="test-status">passed</div><div class="test-duration">0.013s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">UsersService &gt; findAll</div><div class="test-title">should return mapped list of users</div><div class="test-status">passed</div><div class="test-duration">0.021s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">UsersService &gt; findAll</div><div class="test-title">should throw HttpException when select returns error</div><div class="test-status">passed</div><div class="test-duration">0.02s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">UsersService &gt; findOne</div><div class="test-title">should return mapped single user</div><div class="test-status">passed</div><div class="test-duration">0.019s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">UsersService &gt; findOne</div><div class="test-title">should throw HttpException when users select fails</div><div class="test-status">passed</div><div class="test-duration">0.063s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">UsersService &gt; findOne</div><div class="test-title">should throw HttpException when auth getUserById fails</div><div class="test-status">passed</div><div class="test-duration">0.116s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">UsersService &gt; update</div><div class="test-title">should throw HttpException when only one of password / confirm_password is provided</div><div class="test-status">passed</div><div class="test-duration">0.04s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">UsersService &gt; update</div><div class="test-title">should throw HttpException when password and confirm_password mismatch</div><div class="test-status">passed</div><div class="test-duration">0.027s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">UsersService &gt; update</div><div class="test-title">should update auth user, update row, log and return mapped user</div><div class="test-status">passed</div><div class="test-duration">0.027s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">UsersService &gt; update</div><div class="test-title">should throw HttpException when existing users row select fails</div><div class="test-status">passed</div><div class="test-duration">0.034s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">UsersService &gt; update</div><div class="test-title">should throw HttpException when auth getUserById fails</div><div class="test-status">passed</div><div class="test-duration">0.018s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">UsersService &gt; update</div><div class="test-title">should throw HttpException when auth updateUserById fails</div><div class="test-status">passed</div><div class="test-duration">0.022s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">UsersService &gt; update</div><div class="test-title">should throw HttpException when update row fails</div><div class="test-status">passed</div><div class="test-duration">0.029s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">UsersService &gt; remove</div><div class="test-title">should delete users row, delete auth user and insert log</div><div class="test-status">passed</div><div class="test-duration">0.024s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">UsersService &gt; remove</div><div class="test-title">should throw HttpException when deleting row fails</div><div class="test-status">passed</div><div class="test-duration">0.037s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">UsersService &gt; remove</div><div class="test-title">should throw HttpException when deleting auth user fails</div><div class="test-status">passed</div><div class="test-duration">0.039s</div></div></div></div></details></main></body></html>
