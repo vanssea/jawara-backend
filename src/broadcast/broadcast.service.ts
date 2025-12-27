@@ -38,15 +38,21 @@ export class BroadcastService {
         );
       }
 
+      // Destructure to remove file fields that might be in body from multipart/form-data
+      const { gambar, dokumen, ...cleanBody } = body as CreateBroadcastDto & {
+        gambar?: unknown;
+        dokumen?: unknown;
+      };
+
       const { data, error } = await this.supabaseService
         .getClient()
         .from('broadcast')
         .insert({
-          ...body,
+          ...cleanBody,
           link_lampiran_gambar:
-            link_lampiran_gambar ?? body['link_lampiran_gambar'],
+            link_lampiran_gambar ?? cleanBody['link_lampiran_gambar'],
           link_lampiran_dokumen:
-            link_lampiran_dokumen ?? body['link_lampiran_dokumen'],
+            link_lampiran_dokumen ?? cleanBody['link_lampiran_dokumen'],
           created_by: userId,
         })
         .select()
