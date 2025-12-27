@@ -1,277 +1,29 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuites name="jest tests" tests="124" failures="0" errors="0" time="43.888">
-  <testsuite name="KegiatanKategoriService" errors="0" failures="0" skipped="0" timestamp="2025-12-26T12:24:09" time="35.146" tests="2">
-    <testcase classname="KegiatanKategoriService" name="returns ordered kategori list" time="0.227">
+<testsuites name="jest tests" tests="12" failures="0" errors="0" time="2.623">
+  <testsuite name="ReportsService" errors="0" failures="0" skipped="0" timestamp="2025-12-27T16:14:44" time="2.515" tests="12">
+    <testcase classname="ReportsService › findAllExpense" name="combines pengeluaran and kegiatan rows sorted by date" time="0.011">
     </testcase>
-    <testcase classname="KegiatanKategoriService" name="throws HttpException on error" time="0.458">
+    <testcase classname="ReportsService › findAllExpense" name="throws HttpException when pengeluaran query errors" time="0.06">
     </testcase>
-  </testsuite>
-  <testsuite name="LogAktifitasService" errors="0" failures="0" skipped="0" timestamp="2025-12-26T12:24:09" time="35.382" tests="4">
-    <testcase classname="LogAktifitasService › findAll" name="should return list of broadcasts" time="0.188">
+    <testcase classname="ReportsService › findOneExpense" name="returns pengeluaran when found" time="0.003">
     </testcase>
-    <testcase classname="LogAktifitasService › findAll" name="should throw HttpException when select returns error" time="0.715">
+    <testcase classname="ReportsService › findOneExpense" name="falls back to kegiatan when pengeluaran not found" time="0.002">
     </testcase>
-    <testcase classname="LogAktifitasService › findOne" name="should return a single broadcast" time="0.038">
+    <testcase classname="ReportsService › findOneExpense" name="throws 404 when not found" time="0.003">
     </testcase>
-    <testcase classname="LogAktifitasService › findOne" name="should throw HttpException if not found or error" time="0.046">
+    <testcase classname="ReportsService › findAllIncome" name="returns combined tagihan and non-iuran with kategori mapping" time="0.005">
     </testcase>
-  </testsuite>
-  <testsuite name="AuthService" errors="0" failures="0" skipped="0" timestamp="2025-12-26T12:24:09" time="35.441" tests="5">
-    <testcase classname="AuthService › login" name="should return token info when signInWithPassword succeeds" time="0.172">
+    <testcase classname="ReportsService › findAllIncome" name="throws HttpException when kategori query errors" time="0.003">
     </testcase>
-    <testcase classname="AuthService › login" name="should throw HttpException when signInWithPassword returns error" time="0.666">
+    <testcase classname="ReportsService › findOneIncome" name="returns tagihan when found" time="0.006">
     </testcase>
-    <testcase classname="AuthService › register" name="should return token info when signUp succeeds with session" time="0.029">
+    <testcase classname="ReportsService › findOneIncome" name="falls back to non-iuran when tagihan not found" time="0.002">
     </testcase>
-    <testcase classname="AuthService › register" name="should return success even if session is undefined (no session returned)" time="0.065">
+    <testcase classname="ReportsService › findOneIncome" name="throws 404 when neither found" time="0.002">
     </testcase>
-    <testcase classname="AuthService › register" name="should throw HttpException when signUp returns error" time="0.079">
+    <testcase classname="ReportsService › generatePdfReport" name="produces a Buffer for type all" time="0.022">
     </testcase>
-  </testsuite>
-  <testsuite name="DashboardService" errors="0" failures="0" skipped="0" timestamp="2025-12-26T12:24:09" time="36.291" tests="6">
-    <testcase classname="DashboardService › getEventDashboard" name="returns aggregated event dashboard data" time="0.322">
-    </testcase>
-    <testcase classname="DashboardService › getEventDashboard" name="throws HttpException when supabase returns error" time="1.23">
-    </testcase>
-    <testcase classname="DashboardService › getPopulationDashboard" name="aggregates population data" time="0.202">
-    </testcase>
-    <testcase classname="DashboardService › getPopulationDashboard" name="throws HttpException when warga query errors" time="0.043">
-    </testcase>
-    <testcase classname="DashboardService › getFinanceDashboard" name="computes finance summary" time="0.073">
-    </testcase>
-    <testcase classname="DashboardService › getFinanceDashboard" name="throws HttpException when finance query fails" time="0.02">
-    </testcase>
-  </testsuite>
-  <testsuite name="WargaService" errors="0" failures="0" skipped="0" timestamp="2025-12-26T12:24:09" time="35.921" tests="10">
-    <testcase classname="WargaService › create" name="inserts warga and returns created row" time="0.203">
-    </testcase>
-    <testcase classname="WargaService › create" name="throws on insert error" time="0.35">
-    </testcase>
-    <testcase classname="WargaService › findAll" name="returns ordered warga list" time="0.102">
-    </testcase>
-    <testcase classname="WargaService › findAll" name="throws when query fails" time="0.175">
-    </testcase>
-    <testcase classname="WargaService › findOne" name="returns single warga" time="0.082">
-    </testcase>
-    <testcase classname="WargaService › findOne" name="throws NotFound when row missing" time="0.068">
-    </testcase>
-    <testcase classname="WargaService › update" name="updates warga and returns row" time="0.12">
-    </testcase>
-    <testcase classname="WargaService › update" name="throws NotFound when update returns missing row" time="0.084">
-    </testcase>
-    <testcase classname="WargaService › remove" name="deletes warga" time="0.127">
-    </testcase>
-    <testcase classname="WargaService › remove" name="throws NotFound when delete returns no row" time="0.183">
-    </testcase>
-  </testsuite>
-  <testsuite name="PemasukkanNonIuranService" errors="0" failures="0" skipped="0" timestamp="2025-12-26T12:24:09" time="36.339" tests="8">
-    <testcase classname="PemasukkanNonIuranService › create" name="should create data, upload file, log activity, and return data" time="0.416">
-    </testcase>
-    <testcase classname="PemasukkanNonIuranService › create" name="should throw HttpException when insert fails" time="0.934">
-    </testcase>
-    <testcase classname="PemasukkanNonIuranService › findAll" name="should return list of data" time="0.16">
-    </testcase>
-    <testcase classname="PemasukkanNonIuranService › findAll" name="should throw HttpException on select error" time="0.112">
-    </testcase>
-    <testcase classname="PemasukkanNonIuranService › findOne" name="should return single data" time="0.063">
-    </testcase>
-    <testcase classname="PemasukkanNonIuranService › findOne" name="should throw HttpException when data not found" time="0.041">
-    </testcase>
-    <testcase classname="PemasukkanNonIuranService › update" name="should update data, replace file, and log activity" time="0.041">
-    </testcase>
-    <testcase classname="PemasukkanNonIuranService › remove" name="should delete data, remove file, and log activity" time="0.029">
-    </testcase>
-  </testsuite>
-  <testsuite name="PemasukkanTagihanService" errors="0" failures="0" skipped="0" timestamp="2025-12-26T12:24:09" time="36.302" tests="10">
-    <testcase classname="PemasukkanTagihanService › create" name="should create data and log activity" time="0.273">
-    </testcase>
-    <testcase classname="PemasukkanTagihanService › create" name="should throw HttpException when insert fails" time="0.632">
-    </testcase>
-    <testcase classname="PemasukkanTagihanService › findAll" name="should return list of data" time="0.036">
-    </testcase>
-    <testcase classname="PemasukkanTagihanService › findAll" name="should throw HttpException on select error" time="0.063">
-    </testcase>
-    <testcase classname="PemasukkanTagihanService › findOne" name="should return single data" time="0.155">
-    </testcase>
-    <testcase classname="PemasukkanTagihanService › findOne" name="should throw HttpException when not found" time="0.062">
-    </testcase>
-    <testcase classname="PemasukkanTagihanService › update" name="should update data and log activity" time="0.087">
-    </testcase>
-    <testcase classname="PemasukkanTagihanService › update" name="should throw HttpException when update fails" time="0.09">
-    </testcase>
-    <testcase classname="PemasukkanTagihanService › remove" name="should delete data and log activity" time="0.109">
-    </testcase>
-    <testcase classname="PemasukkanTagihanService › remove" name="should throw HttpException when delete fails" time="0.134">
-    </testcase>
-  </testsuite>
-  <testsuite name="PemasukanKategoriIuranService" errors="0" failures="0" skipped="0" timestamp="2025-12-26T12:24:09" time="36.34" tests="11">
-    <testcase classname="PemasukanKategoriIuranService › create" name="should create kategori iuran and insert log" time="0.334">
-    </testcase>
-    <testcase classname="PemasukanKategoriIuranService › create" name="should throw HttpException when insert fails" time="0.603">
-    </testcase>
-    <testcase classname="PemasukanKategoriIuranService › create" name="should throw HttpException when log insert fails" time="0.086">
-    </testcase>
-    <testcase classname="PemasukanKategoriIuranService › findAll" name="should return list ordered by created_at desc" time="0.09">
-    </testcase>
-    <testcase classname="PemasukanKategoriIuranService › findAll" name="should throw HttpException when select fails" time="0.145">
-    </testcase>
-    <testcase classname="PemasukanKategoriIuranService › findOne" name="should return one kategori iuran" time="0.083">
-    </testcase>
-    <testcase classname="PemasukanKategoriIuranService › findOne" name="should throw HttpException when not found" time="0.139">
-    </testcase>
-    <testcase classname="PemasukanKategoriIuranService › update" name="should update kategori iuran and insert log" time="0.11">
-    </testcase>
-    <testcase classname="PemasukanKategoriIuranService › update" name="should throw HttpException when update fails" time="0.075">
-    </testcase>
-    <testcase classname="PemasukanKategoriIuranService › remove" name="should delete kategori iuran and insert log" time="0.155">
-    </testcase>
-    <testcase classname="PemasukanKategoriIuranService › remove" name="should throw HttpException when delete fails" time="0.019">
-    </testcase>
-  </testsuite>
-  <testsuite name="PesanAspirasiService" errors="0" failures="0" skipped="0" timestamp="2025-12-26T12:24:09" time="36.48" tests="11">
-    <testcase classname="PesanAspirasiService › create" name="should create pesan aspirasi and log activity" time="0.45">
-    </testcase>
-    <testcase classname="PesanAspirasiService › create" name="should throw HttpException when insert fails" time="1.229">
-    </testcase>
-    <testcase classname="PesanAspirasiService › create" name="should throw HttpException when log insert fails" time="0.056">
-    </testcase>
-    <testcase classname="PesanAspirasiService › findAll" name="should return list ordered by created_at desc" time="0.038">
-    </testcase>
-    <testcase classname="PesanAspirasiService › findAll" name="should throw HttpException when select fails" time="0.038">
-    </testcase>
-    <testcase classname="PesanAspirasiService › findOne" name="should return single pesan aspirasi" time="0.012">
-    </testcase>
-    <testcase classname="PesanAspirasiService › findOne" name="should throw HttpException when not found" time="0.017">
-    </testcase>
-    <testcase classname="PesanAspirasiService › update" name="should update data and insert log" time="0.017">
-    </testcase>
-    <testcase classname="PesanAspirasiService › update" name="should throw HttpException when update fails" time="0.022">
-    </testcase>
-    <testcase classname="PesanAspirasiService › remove" name="should delete data and insert log" time="0.035">
-    </testcase>
-    <testcase classname="PesanAspirasiService › remove" name="should throw HttpException when delete fails" time="0.037">
-    </testcase>
-  </testsuite>
-  <testsuite name="TransferChannelService" errors="0" failures="0" skipped="0" timestamp="2025-12-26T12:24:09" time="36.269" tests="12">
-    <testcase classname="TransferChannelService › create" name="should upload files, insert channel and log activity" time="0.234">
-    </testcase>
-    <testcase classname="TransferChannelService › create" name="should throw HttpException when insert returns error" time="0.586">
-    </testcase>
-    <testcase classname="TransferChannelService › findAll" name="should return all channels" time="0.053">
-    </testcase>
-    <testcase classname="TransferChannelService › findAll" name="should throw HttpException on error" time="0.01">
-    </testcase>
-    <testcase classname="TransferChannelService › findOne" name="should return a channel" time="0.081">
-    </testcase>
-    <testcase classname="TransferChannelService › findOne" name="should throw HttpException on error" time="0.041">
-    </testcase>
-    <testcase classname="TransferChannelService › update" name="should delete old files if new are uploaded and update record" time="0.275">
-    </testcase>
-    <testcase classname="TransferChannelService › update" name="should update without removing files if none uploaded" time="0.154">
-    </testcase>
-    <testcase classname="TransferChannelService › update" name="should throw HttpException on update error" time="0.102">
-    </testcase>
-    <testcase classname="TransferChannelService › remove" name="should delete files, delete row, insert log" time="0.11">
-    </testcase>
-    <testcase classname="TransferChannelService › remove" name="should throw HttpException on delete error" time="0.04">
-    </testcase>
-    <testcase classname="TransferChannelService › remove" name="should throw HttpException when findOne fails" time="0.029">
-    </testcase>
-  </testsuite>
-  <testsuite name="KegiatanService" errors="0" failures="0" skipped="0" timestamp="2025-12-26T12:24:09" time="36.56" tests="13">
-    <testcase classname="KegiatanService › create" name="should insert kegiatan and log activity then return data" time="0.296">
-    </testcase>
-    <testcase classname="KegiatanService › create" name="should throw HttpException when kegiatan insert returns error" time="0.95">
-    </testcase>
-    <testcase classname="KegiatanService › create" name="should throw HttpException when log insertion fails" time="0.108">
-    </testcase>
-    <testcase classname="KegiatanService › findAll" name="should return list of kegiatan" time="0.102">
-    </testcase>
-    <testcase classname="KegiatanService › findAll" name="should throw HttpException when select returns error" time="0.129">
-    </testcase>
-    <testcase classname="KegiatanService › findOne" name="should return a single kegiatan" time="0.098">
-    </testcase>
-    <testcase classname="KegiatanService › findOne" name="should throw HttpException if not found or error" time="0.058">
-    </testcase>
-    <testcase classname="KegiatanService › update" name="should update kegiatan and insert log then return updated data" time="0.049">
-    </testcase>
-    <testcase classname="KegiatanService › update" name="should throw HttpException when update returns error" time="0.038">
-    </testcase>
-    <testcase classname="KegiatanService › update" name="should throw HttpException when log insert fails after update" time="0.021">
-    </testcase>
-    <testcase classname="KegiatanService › remove" name="should delete kegiatan and insert log" time="0.036">
-    </testcase>
-    <testcase classname="KegiatanService › remove" name="should throw HttpException when delete returns error" time="0.023">
-    </testcase>
-    <testcase classname="KegiatanService › remove" name="should throw HttpException when findOne fails" time="0.054">
-    </testcase>
-  </testsuite>
-  <testsuite name="BroadcastService" errors="0" failures="0" skipped="0" timestamp="2025-12-26T12:24:09" time="36.532" tests="13">
-    <testcase classname="BroadcastService › create" name="should insert broadcast and log activity then return data" time="0.478">
-    </testcase>
-    <testcase classname="BroadcastService › create" name="should throw HttpException when broadcast insert returns error" time="1.212">
-    </testcase>
-    <testcase classname="BroadcastService › create" name="should throw HttpException when log insertion fails" time="0.076">
-    </testcase>
-    <testcase classname="BroadcastService › findAll" name="should return list of broadcasts" time="0.026">
-    </testcase>
-    <testcase classname="BroadcastService › findAll" name="should throw HttpException when select returns error" time="0.025">
-    </testcase>
-    <testcase classname="BroadcastService › findOne" name="should return a single broadcast" time="0.024">
-    </testcase>
-    <testcase classname="BroadcastService › findOne" name="should throw HttpException if not found or error" time="0.032">
-    </testcase>
-    <testcase classname="BroadcastService › update" name="should update broadcast and insert log then return updated data" time="0.02">
-    </testcase>
-    <testcase classname="BroadcastService › update" name="should throw HttpException when update returns error" time="0.021">
-    </testcase>
-    <testcase classname="BroadcastService › update" name="should throw HttpException when log insert fails after update" time="0.047">
-    </testcase>
-    <testcase classname="BroadcastService › remove" name="should delete broadcast and insert log" time="0.02">
-    </testcase>
-    <testcase classname="BroadcastService › remove" name="should throw HttpException when delete returns error" time="0.008">
-    </testcase>
-    <testcase classname="BroadcastService › remove" name="should throw HttpException when findOne fails" time="0.034">
-    </testcase>
-  </testsuite>
-  <testsuite name="UsersService" errors="0" failures="0" skipped="0" timestamp="2025-12-26T12:24:09" time="36.971" tests="19">
-    <testcase classname="UsersService › create" name="should throw HttpException when password and confirm_password mismatch" time="1.574">
-    </testcase>
-    <testcase classname="UsersService › create" name="should create auth user, insert row, create warga if role WARGA, log and return mapped user" time="0.18">
-    </testcase>
-    <testcase classname="UsersService › create" name="should throw HttpException when auth createUser returns error" time="0.023">
-    </testcase>
-    <testcase classname="UsersService › create" name="should delete auth user and throw HttpException when insert into users fails" time="0.013">
-    </testcase>
-    <testcase classname="UsersService › findAll" name="should return mapped list of users" time="0.021">
-    </testcase>
-    <testcase classname="UsersService › findAll" name="should throw HttpException when select returns error" time="0.02">
-    </testcase>
-    <testcase classname="UsersService › findOne" name="should return mapped single user" time="0.019">
-    </testcase>
-    <testcase classname="UsersService › findOne" name="should throw HttpException when users select fails" time="0.063">
-    </testcase>
-    <testcase classname="UsersService › findOne" name="should throw HttpException when auth getUserById fails" time="0.116">
-    </testcase>
-    <testcase classname="UsersService › update" name="should throw HttpException when only one of password / confirm_password is provided" time="0.04">
-    </testcase>
-    <testcase classname="UsersService › update" name="should throw HttpException when password and confirm_password mismatch" time="0.027">
-    </testcase>
-    <testcase classname="UsersService › update" name="should update auth user, update row, log and return mapped user" time="0.027">
-    </testcase>
-    <testcase classname="UsersService › update" name="should throw HttpException when existing users row select fails" time="0.034">
-    </testcase>
-    <testcase classname="UsersService › update" name="should throw HttpException when auth getUserById fails" time="0.018">
-    </testcase>
-    <testcase classname="UsersService › update" name="should throw HttpException when auth updateUserById fails" time="0.022">
-    </testcase>
-    <testcase classname="UsersService › update" name="should throw HttpException when update row fails" time="0.029">
-    </testcase>
-    <testcase classname="UsersService › remove" name="should delete users row, delete auth user and insert log" time="0.024">
-    </testcase>
-    <testcase classname="UsersService › remove" name="should throw HttpException when deleting row fails" time="0.037">
-    </testcase>
-    <testcase classname="UsersService › remove" name="should throw HttpException when deleting auth user fails" time="0.039">
+    <testcase classname="ReportsService › generatePdfReport" name="throws HttpException when kategori query errors" time="0.001">
     </testcase>
   </testsuite>
 </testsuites>

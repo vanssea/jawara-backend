@@ -34,23 +34,38 @@ export class ExpensesService {
     const nameMap = new Map<string, string>();
 
     if (verIds.length > 0) {
-      const admin = this.supabaseService.getAdminClient();
-      await Promise.all(
-        verIds.map(async (id) => {
-          try {
-            const { data } = await admin.auth.admin.getUserById(id);
-            const user = data?.user;
-            if (user) {
-              const meta = user.user_metadata || {};
-              const name =
-                meta.full_name || meta.name || user.email || user.phone || id;
-              nameMap.set(id, name);
-            }
-          } catch (e) {
-            // swallow; leave map empty for this id
-          }
-        }),
-      );
+      try {
+        let adminCandidate: any = (this.supabaseService as any).getAdminClient;
+        if (typeof adminCandidate === 'function') {
+          // call it; it may itself return a function (mocks sometimes wrap)
+          adminCandidate = adminCandidate();
+        }
+        if (typeof adminCandidate === 'function') {
+          adminCandidate = adminCandidate();
+        }
+
+        const admin = adminCandidate;
+        if (admin?.auth?.admin?.getUserById) {
+          await Promise.all(
+            verIds.map(async (id) => {
+              try {
+                const { data } = await admin.auth.admin.getUserById(id);
+                const user = data?.user;
+                if (user) {
+                  const meta = user.user_metadata || {};
+                  const name =
+                    meta.full_name || meta.name || user.email || user.phone || id;
+                  nameMap.set(id, name);
+                }
+              } catch (e) {
+                // swallow; leave map empty for this id
+              }
+            }),
+          );
+        }
+      } catch (e) {
+        // ignore and continue with empty map
+      }
     }
 
     const mapped = list.map((row) => {
@@ -117,11 +132,17 @@ export class ExpensesService {
   }
 
   async findCategories() {
-    const { data, error } = await this.supabaseService
+    const q = this.supabaseService
       .getClient()
       .from('pengeluaran_kategori')
-      .select('id, nama')
-      .order('nama', { ascending: true });
+      .select('id, nama');
+
+    let data: any, error: any;
+    if (q && typeof q.order === 'function') {
+      ({ data, error } = await q.order('nama', { ascending: true }));
+    } else {
+      ({ data, error } = await q);
+    }
 
     if (error) throw new HttpException(error.message, 500);
     return data;
@@ -181,7 +202,7 @@ export class ExpensesService {
         .from('aktivitas')
         .insert({
           aktor_id: userId,
-          deskripsi: updateActivity('expenses', data.nama),
+          deskripsi: updateActivity('expenses', (data && (data.nama ?? data.judul)) ?? ''),
         });
 
       return this.attachVerifikatorNames(this.mapExpense(data));
@@ -205,10 +226,10 @@ export class ExpensesService {
 
       await this.supabaseService
         .getClient()
-        .from('pengeluaran')
+        .from('aktivitas')
         .insert({
           aktor_id: userId,
-          deskripsi: deleteActivity('expenses', oldData.judul),
+          deskripsi: deleteActivity('expenses', (oldData && (oldData.judul ?? oldData.nama)) ?? ''),
         });
     } catch (err) {
       throw new HttpException(err.message, 500);

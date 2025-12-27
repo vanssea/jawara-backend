@@ -43,6 +43,12 @@ interface NonIuranRow {
 @Injectable()
 export class ReportsService {
     constructor(private readonly supabase: SupabaseService) {}
+    // pdfFactory dapat di-set di test untuk mem-bypass pdfkit
+    private pdfFactory: () => any = () => new PDFDocument.default();
+
+    setPdfFactory(factory: () => any) {
+        this.pdfFactory = factory;
+    }
 
     // ------------------------------------------------------------------
     // GET EXPENSES DATA (Diperbarui untuk skema baru)
@@ -353,7 +359,7 @@ export class ReportsService {
         // GENERATE PDF
         // ------------------------------------------------------------
 
-        const doc = new PDFDocument.default();
+        const doc = this.pdfFactory();
         const buffers: Uint8Array[] = [];
 
         doc.on('data', buffers.push.bind(buffers));
