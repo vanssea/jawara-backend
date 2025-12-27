@@ -38,17 +38,21 @@ export class BroadcastService {
         );
       }
 
-      // Destructure to remove file fields that might be in body from multipart/form-data
-      const { gambar, dokumen, ...cleanBody } = body as CreateBroadcastDto & {
+      // Destructure to remove file fields and id that might be in body from multipart/form-data
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { gambar, dokumen, id, ...cleanBody } = body as CreateBroadcastDto & {
         gambar?: unknown;
         dokumen?: unknown;
+        id?: unknown;
       };
 
       const { data, error } = await this.supabaseService
         .getClient()
         .from('broadcast')
         .insert({
-          ...cleanBody,
+          judul: cleanBody.judul,
+          pesan: cleanBody.pesan,
+          tanggal_publikasi: cleanBody.tanggal_publikasi,
           link_lampiran_gambar:
             link_lampiran_gambar ?? cleanBody['link_lampiran_gambar'],
           link_lampiran_dokumen:
